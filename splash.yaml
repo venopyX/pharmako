@@ -1,0 +1,20 @@
+flutter_native_splash:
+  color: "#FFFFFF"
+  color_dark: "#272727"
+  # image: assets/{imagepath}
+  # image_dark: assets/{imagepath}
+
+  android_12:
+    color: "#FFFFFF"
+    color_dark: "#272727"
+    # TODO: Add correct logo image path
+    # image: assets/{imagepath}
+    # image_dark: assets/{imagepath}
+
+  web: false
+
+  # ------ To apply, run:
+  # flutter pub run flutter_native_splash:create --path=splash.yaml
+
+  # ------ To remove, run:
+  # flutter pub run flutter_native_splash:remove
