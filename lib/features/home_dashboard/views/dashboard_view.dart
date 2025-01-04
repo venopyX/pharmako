@@ -5,11 +5,13 @@ import '../controllers/dashboard_controller.dart';
 class DashboardView extends StatelessWidget {
   final DashboardController controller = Get.put(DashboardController());
 
+  DashboardView({super.key});
+
   @override
   Widget build(BuildContext context) {
     controller.fetchDashboardData();
     return Scaffold(
-      appBar: AppBar(title: Text('Home Dashboard')), 
+      appBar: AppBar(title: const Text('Home Dashboard')), 
       body: Obx(() {
         final data = controller.dashboardData.value;
         return Column(

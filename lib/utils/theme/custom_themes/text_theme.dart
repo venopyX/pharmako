@@ -11,7 +11,7 @@ class TTextTheme {
         textStyle: const TextStyle().copyWith(
             fontSize: 32.0, fontWeight: FontWeight.bold, color: TColors.textColor1)),
     headlineMedium: GoogleFonts.poppins(
-        textStyle: TextStyle().copyWith(
+        textStyle: const TextStyle().copyWith(
             fontSize: 24.0, fontWeight: FontWeight.w600, color: TColors.textColor1)),
     headlineSmall: GoogleFonts.poppins(
         textStyle: const TextStyle().copyWith(

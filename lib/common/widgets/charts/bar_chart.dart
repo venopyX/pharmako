@@ -7,11 +7,11 @@ class SalesBarChart extends StatelessWidget {
   final Color? tooltipBgColor;
 
   const SalesBarChart({
-    Key? key,
+    super.key,
     required this.salesData,
     required this.labels,
     this.tooltipBgColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
