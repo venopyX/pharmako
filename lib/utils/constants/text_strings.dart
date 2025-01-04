@@ -5,7 +5,7 @@ class TTexts {
 
 // -- GLOBAL Texts
   static const String someTitle = "Choose your product";
-  static const String loginSubTitle = "Select Payment Method";
+  // static const String loginSubTitle = "Select Payment Method";
 
 // -- OnBoarding Texts I
   static const String onBoardingTitle1 = "Choose your product";
@@ -70,8 +70,8 @@ class TTexts {
 // Authentication Headings Text
 
   static const String loginTitle = "Login";
-  static const String LoginSubTitle = "Don't have an account?";
-  static const String LoginSurTitle = "Register";
+  static const String loginSubTitle = "Don't have an account?";
+  static const String loginSurTitle = "Register";
   static const String signupTitle = "Create Account";
   static const String signupSubTitle = "Already have an account?";
   static const String forgetPasswordTitle = "Forget password";

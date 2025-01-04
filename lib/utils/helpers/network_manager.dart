@@ -38,7 +38,7 @@ class NetworkManager extends GetxController {
   Future<bool> isConnected() async {
     try {
       final result = await _connectivity.checkConnectivity();
-      return result != ConnectivityResult.none;
+      return !result.contains(ConnectivityResult.none);
     } on PlatformException catch (e) {
       print('Connectivity check failed: ${e.message}');
       return false;
