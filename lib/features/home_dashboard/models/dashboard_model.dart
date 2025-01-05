@@ -1,9 +1,27 @@
-// TODO: Define the data model for the dashboard.
+// TODO: Dashboard model 
 
-class DashboardModel {
-  final int totalStock;
-  final int lowStock;
-  final List<String> alerts;
+class DashboardSummary {
+  final int totalProducts;
+  final int lowStockItems;
+  final int expiringItems;
+  final double totalSales;
+  final int pendingAlerts;
 
-  DashboardModel({required this.totalStock, required this.lowStock, required this.alerts});
+  DashboardSummary({
+    this.totalProducts = 0,
+    this.lowStockItems = 0,
+    this.expiringItems = 0,
+    this.totalSales = 0.0,
+    this.pendingAlerts = 0,
+  });
+}
+
+class DashboardChartData {
+  final String label;
+  final double value;
+
+  DashboardChartData({
+    required this.label,
+    required this.value,
+  });
 }
