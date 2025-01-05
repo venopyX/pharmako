@@ -11,23 +11,23 @@ class TCheckboxTheme {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(TSizes.checkboxRadius),
     ),
-    checkColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-      if (states.contains(MaterialState.disabled)) {
+    checkColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+      if (states.contains(WidgetState.disabled)) {
         return TColors.darkGrey;
       }
       return TColors.textWhite;
     }),
-    fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-      if (states.contains(MaterialState.disabled)) {
+    fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+      if (states.contains(WidgetState.disabled)) {
         return TColors.buttonDisabled;
       }
-      if (states.contains(MaterialState.selected)) {
+      if (states.contains(WidgetState.selected)) {
         return TColors.buttonColor;
       }
       return TColors.light;
     }),
-    side: MaterialStateBorderSide.resolveWith((Set<MaterialState> states) {
-      if (states.contains(MaterialState.disabled)) {
+    side: WidgetStateBorderSide.resolveWith((Set<WidgetState> states) {
+      if (states.contains(WidgetState.disabled)) {
         return const BorderSide(color: TColors.darkGrey);
       }
       return const BorderSide(color: TColors.primary);
@@ -39,23 +39,23 @@ class TCheckboxTheme {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(TSizes.checkboxRadius),
     ),
-    checkColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-      if (states.contains(MaterialState.disabled)) {
+    checkColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+      if (states.contains(WidgetState.disabled)) {
         return TColors.darkGrey;
       }
       return TColors.textWhite;
     }),
-    fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-      if (states.contains(MaterialState.disabled)) {
+    fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+      if (states.contains(WidgetState.disabled)) {
         return TColors.darkerGrey;
       }
-      if (states.contains(MaterialState.selected)) {
+      if (states.contains(WidgetState.selected)) {
         return TColors.buttonColor;
       }
       return TColors.light;
     }),
-    side: MaterialStateBorderSide.resolveWith((Set<MaterialState> states) {
-      if (states.contains(MaterialState.disabled)) {
+    side: WidgetStateBorderSide.resolveWith((Set<WidgetState> states) {
+      if (states.contains(WidgetState.disabled)) {
         return const BorderSide(color: TColors.darkGrey);
       }
       return const BorderSide(color: TColors.primary);
