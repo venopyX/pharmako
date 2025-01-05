@@ -5,7 +5,7 @@ import '../models/product_model.dart';
 import 'package:intl/intl.dart';
 
 class ViewStockView extends GetView<ViewStockController> {
-  const ViewStockView({Key? key}) : super(key: key);
+  const ViewStockView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +156,7 @@ class ViewStockView extends GetView<ViewStockController> {
                   onSelected: (value) {
                     switch (value) {
                       case 'edit':
-                        // TODO: Implement edit
+                        controller.editProduct(product.id);
                         break;
                       case 'delete':
                         controller.deleteProduct(product.id);

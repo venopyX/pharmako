@@ -67,7 +67,7 @@ class TTextFormFieldTheme {
     ),
   );
 
-  static TextSelectionThemeData TextSelectionTheme = TextSelectionThemeData(
+  static TextSelectionThemeData textSelectionTheme = TextSelectionThemeData(
     cursorColor: TColors.primary, // Customize the cursor color
     selectionColor: TColors.primary.withOpacity(0.3), // Customize the selection color
     selectionHandleColor: TColors.primary, // Customize the selection handle color

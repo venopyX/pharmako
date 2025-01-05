@@ -49,6 +49,11 @@ class InventoryService {
     return _repository.getAllProducts();
   }
 
+  // Get product by ID
+  Future<Product?> getProductById(String id) async {
+    return _repository.getProductById(id);
+  }
+
   // Search products
   Future<List<Product>> searchProducts(String query) async {
     return _repository.searchProducts(query);

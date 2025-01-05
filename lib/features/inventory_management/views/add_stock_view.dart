@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../controllers/add_stock_controller.dart';
 
 class AddStockView extends GetView<AddStockController> {
-  const AddStockView({Key? key}) : super(key: key);
+  const AddStockView({super.key});
 
   @override
   Widget build(BuildContext context) {
