@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/notification_controller.dart';
 import '../models/notification_model.dart';
-import '../../../utils/constants/colors.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class NotificationView extends GetView<NotificationController> {
