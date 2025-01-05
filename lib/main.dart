@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'bindings/dashboard_binding.dart';
-import 'features/home_dashboard/views/dashboard_view.dart';
+import 'routes/app_routes.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +21,8 @@ class MyApp extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
-      initialBinding: DashboardBinding(),
-      home: const DashboardView(),
+      getPages: AppRoutes.routes,
+      initialRoute: '/',
     );
   }
 }
