@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Notification;
 import 'package:get/get.dart';
 import '../controllers/notification_controller.dart';
 import '../models/notification_model.dart';
@@ -67,7 +67,7 @@ class NotificationView extends GetView<NotificationController> {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    controller._initializeNotifications();
+                    await controller.initializeNotifications();
                   },
                   child: ListView.builder(
                     itemCount: controller.notifications.length,

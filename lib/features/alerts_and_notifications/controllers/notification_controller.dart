@@ -17,7 +17,7 @@ class NotificationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _initializeNotifications();
+    initializeNotifications();
     _subscribeToNotifications();
   }
 
@@ -27,7 +27,7 @@ class NotificationController extends GetxController {
     super.onClose();
   }
 
-  void _initializeNotifications() {
+  Future<void> initializeNotifications() async {
     isLoading.value = true;
     notifications.value = _alertService.notifications;
     unreadCount.value = _alertService.unreadCount;
@@ -81,7 +81,7 @@ class NotificationController extends GetxController {
   Future<void> filterByType(NotificationType? type) async {
     if (type == null) {
       selectedType.value = '';
-      _initializeNotifications();
+      initializeNotifications();
       return;
     }
 
@@ -95,7 +95,7 @@ class NotificationController extends GetxController {
   Future<void> filterByPriority(NotificationPriority? priority) async {
     if (priority == null) {
       selectedPriority.value = '';
-      _initializeNotifications();
+      initializeNotifications();
       return;
     }
 
