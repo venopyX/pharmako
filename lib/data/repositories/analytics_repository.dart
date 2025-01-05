@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../features/reports_and_analytics/models/dashboard_analytics_model.dart';
 import '../../features/reports_and_analytics/models/inventory_report_model.dart';
 import '../../utils/helpers/uuid_generator.dart';
+import '../../utils/extensions/getx_extensions.dart';
 
 class AnalyticsRepository extends GetxController {
   // Mock data for development
@@ -107,7 +108,10 @@ class AnalyticsRepository extends GetxController {
       customers: CustomerAnalytics(
         totalCustomers: 500,
         customerGrowthRate: 10,
-        averageCustomerValue: 100,
+        averageCustomerValue: (customerSegments.fold<double>(
+          0,
+          (sum, item) => sum + item.totalValue,
+        ) / customerSegments.length),
         segments: customerSegments,
         customerTrend: customerTrend,
       ),
@@ -209,8 +213,10 @@ class AnalyticsRepository extends GetxController {
             items.fold(0, (sum, item) => sum + item.stockAdjusted),
         totalInventoryValue:
             items.fold(0, (sum, item) => sum + item.totalValue),
-        averageInventoryValue:
-            items.fold(0, (sum, item) => sum + item.totalValue) / items.length,
+        averageInventoryValue: (items.fold<int>(
+          0,
+          (sum, item) => sum + item.totalValue.toInt(),
+        ) / items.length).toDouble(),
         lowStockItems: items.where((item) => item.closingStock <= 5).length,
         outOfStockItems: items.where((item) => item.closingStock == 0).length,
         expiringItems: items

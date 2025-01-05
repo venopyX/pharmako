@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import '../../features/alerts_and_notifications/models/notification_model.dart';
 import '../../utils/helpers/uuid_generator.dart';
+import '../../utils/extensions/getx_extensions.dart';
 
 class AlertRepository extends GetxController {
   final RxList<Notification> _notifications = <Notification>[].obs;
