@@ -26,7 +26,7 @@ class TAppTheme {
     elevatedButtonTheme: TElevatedButtonTheme.lightElevatedButtonTheme,
     outlinedButtonTheme: TOutlinedButtonTheme.lightOutlinedButtonTheme,
     inputDecorationTheme: TTextFormFieldTheme.lightInputDecorationTheme,
-    textSelectionTheme: TTextFormFieldTheme.TextSelectionTheme,
+    textSelectionTheme: TTextFormFieldTheme.textSelectionTheme,
     checkboxTheme: TCheckboxTheme.lightCheckboxTheme,
   );
 
@@ -44,7 +44,7 @@ class TAppTheme {
     elevatedButtonTheme: TElevatedButtonTheme.darkElevatedButtonTheme,
     outlinedButtonTheme: TOutlinedButtonTheme.darkOutlinedButtonTheme,
     inputDecorationTheme: TTextFormFieldTheme.darkInputDecorationTheme,
-    textSelectionTheme: TTextFormFieldTheme.TextSelectionTheme,
+    textSelectionTheme: TTextFormFieldTheme.textSelectionTheme,
     checkboxTheme: TCheckboxTheme.darkCheckboxTheme,
   );
 }
