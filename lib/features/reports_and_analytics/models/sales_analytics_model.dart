@@ -71,3 +71,39 @@ class TopProduct {
     required this.growthRate,
   });
 }
+
+class SalesDataPoint {
+  final DateTime date;
+  final double value;
+
+  const SalesDataPoint({
+    required this.date,
+    required this.value,
+  });
+}
+
+class CustomerSegment {
+  final String name;
+  final String description;
+  final Map<String, dynamic> criteria;
+  final List<String> customerIds;
+  final Map<String, double> metrics;
+
+  const CustomerSegment({
+    required this.name,
+    required this.description,
+    required this.criteria,
+    required this.customerIds,
+    required this.metrics,
+  });
+
+  factory CustomerSegment.empty() {
+    return const CustomerSegment(
+      name: '',
+      description: '',
+      criteria: {},
+      customerIds: [],
+      metrics: {},
+    );
+  }
+}
