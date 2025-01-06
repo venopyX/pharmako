@@ -39,7 +39,7 @@ class AlertRepository extends GetxController {
     Map<String, dynamic>? metadata,
   }) async {
     final notification = Notification(
-      id: generateUuid(),
+      id: UuidGenerator.generate(),
       title: title,
       message: message,
       type: type,

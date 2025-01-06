@@ -16,7 +16,7 @@ class AuthenticationRepository {
       return userCredential.user;
     } on FirebaseAuthException catch (e) {
       // Handle errors here, e.g., wrong password, user not found, etc.
-      TLoggerHelper.error('Login failed: ${e.message}');
+      AppLogger.error('Login failed: ${e.message}');
       return null;
     }
   }
@@ -37,7 +37,7 @@ class AuthenticationRepository {
       return userCredential.user;
     } on FirebaseAuthException catch (e) {
       // Handle errors here, e.g., weak password, email already in use, etc.
-      TLoggerHelper.error('Registration failed: ${e.message}');
+      AppLogger.error('Registration failed: ${e.message}');
       return null;
     }
   }
@@ -58,7 +58,7 @@ class AuthenticationRepository {
       await _firebaseAuth.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
       // Handle errors here, e.g., user not found, etc.
-      TLoggerHelper.error('Password reset email failed: ${e.message}');
+      AppLogger.error('Password reset email failed: ${e.message}');
     }
   }
 }

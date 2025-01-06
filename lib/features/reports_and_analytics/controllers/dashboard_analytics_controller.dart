@@ -9,13 +9,18 @@ class DashboardAnalyticsController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxString selectedTimeRange = 'monthly'.obs;
   final RxString selectedChart = 'sales'.obs;
+  final RxString selectedTrendPeriod = 'week'.obs;
 
   DashboardAnalyticsController(this._analyticsService);
 
   @override
   void onInit() {
     super.onInit();
-    loadAnalytics();
+    refreshData();
+  }
+
+  Future<void> refreshData() async {
+    await loadAnalytics();
   }
 
   Future<void> loadAnalytics() async {
@@ -42,20 +47,30 @@ class DashboardAnalyticsController extends GetxController {
     selectedChart.value = chart;
   }
 
-  List<SalesDataPoint> get chartData {
-    if (analytics.value == null) return [];
+  void updateTrendPeriod(String period) {
+    selectedTrendPeriod.value = period;
+    loadAnalytics();
+  }
 
-    switch (selectedChart.value) {
-      case 'sales':
-        return analytics.value!.sales.salesTrend;
-      case 'customers':
-        return analytics.value!.customers.customerTrend;
-      default:
-        return [];
+  String formatNumber(num value) {
+    if (value >= 1000000) {
+      return '${(value / 1000000).toStringAsFixed(1)}M';
+    } else if (value >= 1000) {
+      return '${(value / 1000).toStringAsFixed(1)}K';
     }
+    return value.toStringAsFixed(0);
   }
 
   String formatCurrency(double value) {
+    return '\$${value.toStringAsFixed(2)}';
+  }
+
+  String formatCurrencyCompact(double value) {
+    if (value >= 1000000) {
+      return '\$${(value / 1000000).toStringAsFixed(1)}M';
+    } else if (value >= 1000) {
+      return '\$${(value / 1000).toStringAsFixed(1)}K';
+    }
     return '\$${value.toStringAsFixed(2)}';
   }
 
@@ -75,6 +90,25 @@ class DashboardAnalyticsController extends GetxController {
       return const Color(0xFFF44336); // Red
     } else {
       return const Color(0xFF9E9E9E); // Grey
+    }
+  }
+
+  String formatDateShort(DateTime date) {
+    return '${date.day}/${date.month}';
+  }
+
+  List<SalesDataPoint> get chartData {
+    if (analytics.value == null) return [];
+
+    switch (selectedChart.value) {
+      case 'sales':
+        return analytics.value!.sales.salesTrend;
+      case 'customers':
+        return analytics.value!.customers.customerTrend;
+      case 'inventory':
+        return analytics.value!.inventory.valueTrend;
+      default:
+        return [];
     }
   }
 

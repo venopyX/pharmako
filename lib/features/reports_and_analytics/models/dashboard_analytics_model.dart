@@ -44,6 +44,7 @@ class InventoryAnalytics {
   final double inventoryValue;
   final double turnoverRate;
   final List<CategoryDistribution> categoryDistribution;
+  final List<SalesDataPoint> valueTrend;
 
   const InventoryAnalytics({
     required this.totalProducts,
@@ -53,6 +54,7 @@ class InventoryAnalytics {
     required this.inventoryValue,
     required this.turnoverRate,
     required this.categoryDistribution,
+    required this.valueTrend,
   });
 
   factory InventoryAnalytics.fromJson(Map<String, dynamic> json) {
@@ -66,6 +68,9 @@ class InventoryAnalytics {
       categoryDistribution: (json['categoryDistribution'] as List<dynamic>)
           .map((e) => CategoryDistribution.fromJson(e as Map<String, dynamic>))
           .toList(),
+      valueTrend: (json['valueTrend'] as List<dynamic>)
+          .map((e) => SalesDataPoint.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -76,8 +81,8 @@ class InventoryAnalytics {
         'expiringItems': expiringItems,
         'inventoryValue': inventoryValue,
         'turnoverRate': turnoverRate,
-        'categoryDistribution':
-            categoryDistribution.map((e) => e.toJson()).toList(),
+        'categoryDistribution': categoryDistribution.map((e) => e.toJson()).toList(),
+        'valueTrend': valueTrend.map((e) => e.toJson()).toList(),
       };
 }
 

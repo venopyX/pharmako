@@ -1,7 +1,13 @@
 import 'package:uuid/uuid.dart';
 
-const _uuid = Uuid();
+class UuidGenerator {
+  static final Uuid _uuid = Uuid();
 
-String generateUuid() {
-  return _uuid.v4();
+  static String generate() {
+    return _uuid.v4();
+  }
+
+  static String generateWithPrefix(String prefix) {
+    return '${prefix}_${_uuid.v4()}';
+  }
 }

@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:pharmako/utils/constants/color.dart';
+import 'package:pharmako/utils/constants/colors.dart';
 
 class TSectionHeading extends StatelessWidget {
-  const TSectionHeading({super.key, this.textColor, this.showActionButton = false, required this.title, this.buttonTitle = 'View All', this.onPressed});
+  const TSectionHeading(
+      {super.key,
+      this.textColor,
+      this.showActionButton = false,
+      required this.title,
+      this.buttonTitle = 'View All',
+      this.onPressed});
 
   final Color? textColor;
   final bool showActionButton;
@@ -14,12 +20,21 @@ class TSectionHeading extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: Theme.of(context).textTheme.titleLarge!.apply(color: textColor), maxLines: 1, overflow: TextOverflow.ellipsis,),
-        if(showActionButton)TextButton(onPressed: onPressed, child:Text(buttonTitle, style: Theme.of(context).textTheme.bodySmall!.apply(color: TColors.primary,)))
+        Text(
+          title,
+          style:
+              Theme.of(context).textTheme.titleLarge!.apply(color: textColor),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        if (showActionButton)
+          TextButton(
+              onPressed: onPressed,
+              child: Text(buttonTitle,
+                  style: Theme.of(context).textTheme.bodySmall!.apply(
+                        color: AppColors.primary,
+                      )))
       ],
     );
   }
-
 }
-
-

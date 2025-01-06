@@ -1,5 +1,7 @@
+import 'dart:math';
 import '../../features/reports_and_analytics/models/dashboard_analytics_model.dart';
 import '../../features/reports_and_analytics/models/inventory_report_model.dart';
+import '../../features/reports_and_analytics/models/sales_analytics_model.dart';
 import '../repositories/analytics_repository.dart';
 
 class AnalyticsService {
@@ -25,6 +27,67 @@ class AnalyticsService {
   double calculateGrowthRate(double currentValue, double previousValue) {
     if (previousValue == 0) return 0;
     return ((currentValue - previousValue) / previousValue) * 100;
+  }
+
+  // Sales Analytics
+  Future<SalesAnalytics> getSalesAnalytics({
+    required String period,
+    required String metric,
+  }) async {
+    try {
+      // TODO: Implement actual API call
+      await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
+      return _getMockSalesAnalytics(period: period, metric: metric);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  SalesAnalytics _getMockSalesAnalytics({
+    required String period,
+    required String metric,
+  }) {
+    final now = DateTime.now();
+    final random = Random();
+
+    // Generate mock sales trend data
+    final salesTrend = List.generate(
+      24,
+      (index) => SalesTrendPoint(
+        timestamp: now.subtract(Duration(hours: 23 - index)),
+        value: (random.nextDouble() * 1000) + 500,
+      ),
+    );
+
+    // Generate mock top products
+    final topProducts = List.generate(
+      5,
+      (index) => TopProduct(
+        name: 'Product ${index + 1}',
+        sales: (random.nextInt(100) + 50),
+        revenue: (random.nextDouble() * 5000) + 1000,
+      ),
+    );
+
+    // Generate mock sales by hour
+    final salesByHour = List.generate(
+      24,
+      (index) => (random.nextDouble() * 100) + 20,
+    );
+
+    return SalesAnalytics(
+      totalRevenue: 25000.0,
+      totalSales: 150,
+      averageOrderValue: 166.67,
+      growthRate: 15.5,
+      salesGrowthRate: 12.3,
+      orderValueGrowthRate: 8.7,
+      conversionRate: 3.2,
+      conversionRateGrowthRate: 0.5,
+      salesTrend: salesTrend,
+      topProducts: topProducts,
+      salesByHour: salesByHour,
+    );
   }
 
   double calculateTurnoverRate(

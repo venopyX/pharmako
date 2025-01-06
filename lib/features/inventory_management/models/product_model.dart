@@ -33,6 +33,7 @@ class Product {
 
   bool get isLowStock => quantity <= minimumStockLevel;
   bool get isExpiringSoon => expiryDate.difference(DateTime.now()).inDays <= 30;
+  double get totalValue => price * quantity;
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(

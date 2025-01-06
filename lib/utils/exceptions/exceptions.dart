@@ -1,56 +1,184 @@
-/// Exception class for handling various errors.
-class TExceptions implements Exception {
+import 'package:pharmako/data/repositories/inventory_repository.dart';
+
+import '../../features/inventory_management/models/product_model.dart';
+import '../../utils/logging/logger.dart';
+import 'package:uuid/uuid.dart';
+
+/// Exception class for handling inventory-related errors.
+class InventoryException implements Exception {
   /// The associated error message.
   final String message;
 
   /// Default constructor with a generic error message.
-  const TExceptions([this.message = 'An unexpected error occurred. Please try again.']);
+  const InventoryException([this.message = 'An unexpected inventory error occurred. Please try again.']);
+}
 
-  /// Create an authentication exception from a Firebase authentication exception code.
-  factory TExceptions.fromCode(String code) {
-    switch (code) {
-      case 'email-already-in-use':
-        return const TExceptions('The email address is already registered. Please use a different email.');
-      case 'invalid-email':
-        return const TExceptions('The email address provided is invalid. Please enter a valid email.');
-      case 'weak-password':
-        return const TExceptions('The password is too weak. Please choose a stronger password.');
-      case 'user-disabled':
-        return const TExceptions('This user account has been disabled. Please contact support for assistance.');
-      case 'user-not-found':
-        return const TExceptions('Invalid login details. User not found.');
-      case 'wrong-password':
-        return const TExceptions('Incorrect password. Please check your password and try again.');
-      case 'INVALID_LOGIN_CREDENTIALS':
-        return const TExceptions('Invalid login credentials. Please double-check your information.');
-      case 'too-many-requests':
-        return const TExceptions('Too many requests. Please try again later.');
-      case 'invalid-argument':
-        return const TExceptions('Invalid argument provided to the authentication method.');
-      case 'invalid-password':
-        return const TExceptions('Incorrect password. Please try again.');
-      case 'invalid-phone-number':
-        return const TExceptions('The provided phone number is invalid.');
-      case 'operation-not-allowed':
-        return const TExceptions('The sign-in provider is disabled for your Firebase project.');
-      case 'session-cookie-expired':
-        return const TExceptions('The Firebase session cookie has expired. Please sign in again.');
-      case 'uid-already-exists':
-        return const TExceptions('The provided user ID is already in use by another user.');
-      case 'sign_in_failed':
-        return const TExceptions('Sign-in failed. Please try again.');
-      case 'network-request-failed':
-        return const TExceptions('Network request failed. Please check your internet connection.');
-      case 'internal-error':
-        return const TExceptions('Internal error. Please try again later.');
-      case 'invalid-verification-code':
-        return const TExceptions('Invalid verification code. Please enter a valid code.');
-      case 'invalid-verification-id':
-        return const TExceptions('Invalid verification ID. Please request a new verification code.');
-      case 'quota-exceeded':
-        return const TExceptions('Quota exceeded. Please try again later.');
-      default:
-        return const TExceptions();
+class InventoryService {
+  final InventoryRepository _repository;
+  final _uuid = const Uuid();
+
+  InventoryService(this._repository);
+
+  // Add new product
+  Future<void> addProduct({
+    required String name,
+    required String description,
+    required String category,
+    required String manufacturer,
+    required String batchNumber,
+    required DateTime expiryDate,
+    required int quantity,
+    required double price,
+    required String unit,
+    required int minimumStockLevel,
+    required String location,
+  }) async {
+    try {
+      final product = Product(
+        id: _uuid.v4(),
+        name: name,
+        description: description,
+        category: category,
+        manufacturer: manufacturer,
+        batchNumber: batchNumber,
+        expiryDate: expiryDate,
+        quantity: quantity,
+        price: price,
+        unit: unit,
+        minimumStockLevel: minimumStockLevel,
+        location: location,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      await _repository.addProduct(product);
+      AppLogger.info('Product added successfully: ${product.name}');
+    } catch (e) {
+      AppLogger.error('Failed to add product: $e');
+      throw InventoryException('Failed to add product: $e');
     }
+  }
+
+  // Get all products with filtering
+  Future<List<Product>> getProducts({
+    String? searchQuery,
+    String? category,
+    String? manufacturer,
+    bool? lowStock,
+    bool? expiringSoon,
+    DateTime? expiryDateStart,
+    DateTime? expiryDateEnd,
+  }) async {
+    try {
+      var products = await _repository.getAllProducts();
+
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        products = await _repository.searchProducts(searchQuery);
+      }
+
+      return _repository.filterProducts(
+        category: category,
+        manufacturer: manufacturer,
+        lowStock: lowStock,
+        expiringSoon: expiringSoon,
+        expiryDateStart: expiryDateStart,
+        expiryDateEnd: expiryDateEnd,
+      );
+    } catch (e) {
+      AppLogger.error('Failed to get products: $e');
+      throw InventoryException('Failed to get products: $e');
+    }
+  }
+
+  // Get product by ID
+  Future<Product?> getProductById(String id) async {
+    try {
+      return _repository.getProductById(id);
+    } catch (e) {
+      AppLogger.error('Failed to get product by ID: $e');
+      throw InventoryException('Failed to get product by ID: $e');
+    }
+  }
+
+  // Update product
+  Future<void> updateProduct(Product product) async {
+    try {
+      await _repository.updateProduct(product.copyWith(
+        updatedAt: DateTime.now(),
+      ));
+      AppLogger.info('Product updated successfully: ${product.name}');
+    } catch (e) {
+      AppLogger.error('Failed to update product: $e');
+      throw InventoryException('Failed to update product: $e');
+    }
+  }
+
+  // Delete product
+  Future<void> deleteProduct(String id) async {
+    try {
+      await _repository.deleteProduct(id);
+      AppLogger.info('Product deleted successfully: $id');
+    } catch (e) {
+      AppLogger.error('Failed to delete product: $e');
+      throw InventoryException('Failed to delete product: $e');
+    }
+  }
+
+  // Update stock quantity
+  Future<void> updateStock(String id, int quantity) async {
+    try {
+      await _repository.updateStock(id, quantity);
+      AppLogger.info('Stock updated successfully for product: $id');
+    } catch (e) {
+      AppLogger.error('Failed to update stock: $e');
+      throw InventoryException('Failed to update stock: $e');
+    }
+  }
+
+  // Get low stock products
+  Future<List<Product>> getLowStockProducts() async {
+    try {
+      return _repository.getLowStockProducts();
+    } catch (e) {
+      AppLogger.error('Failed to get low stock products: $e');
+      throw InventoryException('Failed to get low stock products: $e');
+    }
+  }
+
+  // Get expiring products
+  Future<List<Product>> getExpiringSoonProducts() async {
+    try {
+      return _repository.getExpiringSoonProducts();
+    } catch (e) {
+      AppLogger.error('Failed to get expiring products: $e');
+      throw InventoryException('Failed to get expiring products: $e');
+    }
+  }
+
+  // Get categories
+  Future<List<String>> getCategories() async {
+    try {
+      return _repository.getCategories();
+    } catch (e) {
+      AppLogger.error('Failed to get categories: $e');
+      throw InventoryException('Failed to get categories: $e');
+    }
+  }
+
+  // Get manufacturers
+  Future<List<String>> getManufacturers() async {
+    try {
+      return _repository.getManufacturers();
+    } catch (e) {
+      AppLogger.error('Failed to get manufacturers: $e');
+      throw InventoryException('Failed to get manufacturers: $e');
+    }
+  }
+
+  // Generate barcode
+  String _generateBarcode() {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final random = _uuid.v4().substring(0, 4);
+    return 'BAR${timestamp}${random}';
   }
 }

@@ -1,32 +1,34 @@
-import 'package:flutter/material.dart';
-import 'package:pharmako/utils/constants/color.dart';
-import 'package:pharmako/utils/constants/sizes.dart';
+// import 'package:flutter/material.dart';
+// import 'package:pharmako/utils/constants/colors.dart';
+// import 'package:pharmako/utils/constants/sizes.dart';
 
-class TAppBarTheme{
+// class TAppBarTheme {
+//   TAppBarTheme._();
 
-  TAppBarTheme._();
+//   static const lightAppBarTheme = AppBarTheme(
+//     elevation: 0,
+//     centerTitle: false,
+//     scrolledUnderElevation: 0,
+//     backgroundColor: Colors.transparent,
+//     surfaceTintColor: Colors.transparent,
+//     iconTheme: IconThemeData(color: AppColors.black, size: AppSizes.iconMd),
+//     actionsIconTheme:
+//         IconThemeData(color: AppColors.black, size: AppSizes.iconMd),
+//     titleTextStyle: TextStyle(
+//         fontSize: 18.0, fontWeight: FontWeight.w600, color: AppColors.black),
+//   );
 
-  static const lightAppBarTheme = AppBarTheme (
-    elevation: 0,
-    centerTitle: false,
-    scrolledUnderElevation: 0,
-    backgroundColor: Colors.transparent,
-    surfaceTintColor: Colors.transparent,
-    iconTheme: IconThemeData(color: TColors.black, size: TSizes.iconMd),
-    actionsIconTheme: IconThemeData(color: TColors.black, size: TSizes.iconMd),
-    titleTextStyle: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w600, color: TColors.black),
-
-  );
-
-//
-  static const darkAppBarTheme = AppBarTheme (
-    elevation: 0,
-    centerTitle: false,
-    scrolledUnderElevation: 0,
-    backgroundColor: Colors.transparent,
-    surfaceTintColor: Colors.transparent,
-    iconTheme: IconThemeData(color: TColors.black, size:TSizes.iconMd),
-    actionsIconTheme: IconThemeData(color: TColors.white, size: TSizes.iconMd),
-    titleTextStyle: TextStyle (fontSize: 18.0, fontWeight: FontWeight.w600, color: TColors.white),
-  );
-}
+// //
+//   static const darkAppBarTheme = AppBarTheme(
+//     elevation: 0,
+//     centerTitle: false,
+//     scrolledUnderElevation: 0,
+//     backgroundColor: Colors.transparent,
+//     surfaceTintColor: Colors.transparent,
+//     iconTheme: IconThemeData(color: AppColors.black, size: AppSizes.iconMd),
+//     actionsIconTheme:
+//         IconThemeData(color: AppColors.white, size: AppSizes.iconMd),
+//     titleTextStyle: TextStyle(
+//         fontSize: 18.0, fontWeight: FontWeight.w600, color: AppColors.white),
+//   );
+// }

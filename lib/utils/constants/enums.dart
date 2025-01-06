@@ -1,7 +1,7 @@
-enum TextSizes {small, medium, large}
+enum TexAppSizes { small, medium, large }
 
-enum OrderStatus {pending, processing, shipped, delivered, cancelled}
+enum OrderStatus { pending, processing, shipped, delivered, cancelled }
 
-enum PaymentMethods {paypal, masterCard, googlePay}
+enum PaymentMethods { paypal, masterCard, googlePay }
 
-enum FoodType {single, variable}
+enum FoodType { single, variable }
