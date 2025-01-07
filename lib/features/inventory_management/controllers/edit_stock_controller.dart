@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import '../../../data/services/inventory_service.dart';
-import '../models/product_model.dart';
 
 class EditStockController extends GetxController {
   final InventoryService _inventoryService;
@@ -163,24 +162,21 @@ class EditStockController extends GetxController {
 
     isLoading.value = true;
     try {
-      final product = Product(
-        id: productId,
-        name: name.value,
-        description: description.value,
-        category: category.value,
-        price: price.value,
-        quantity: quantity.value,
-        unit: unit.value,
-        manufacturer: manufacturer.value,
-        expiryDate: expiryDate.value,
-        createdAt: DateTime.now(), // This will be preserved by the repository
-        updatedAt: DateTime.now(),
-        minimumStockLevel: minimumStockLevel.value,
-        batchNumber: batchNumber.value,
-        location: location.value,
-      );
+      final productData = {
+        'name': name.value,
+        'description': description.value,
+        'category': category.value,
+        'price': price.value,
+        'quantity': quantity.value,
+        'unit': unit.value,
+        'manufacturer': manufacturer.value,
+        'expiryDate': expiryDate.value,
+        'minimumStockLevel': minimumStockLevel.value,
+        'batchNumber': batchNumber.value,
+        'location': location.value,
+      };
 
-      await _inventoryService.updateProduct(product);
+      await _inventoryService.updateProduct(productId, productData);
       Get.back(result: true);
       Get.snackbar(
         'Success',
