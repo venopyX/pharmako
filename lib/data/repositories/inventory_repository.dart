@@ -1,7 +1,5 @@
-// TODO: Implement methods for managing inventory data, including adding, updating, and deleting stock items.
-
 import '../../features/inventory_management/models/product_model.dart';
-import '../../utils/helpers/uuid_generator.dart';
+import '../../utils/logging/logger.dart';
 
 class InventoryRepository {
   // Simulated local storage for MVP
@@ -10,6 +8,7 @@ class InventoryRepository {
   // Create
   Future<void> addProduct(Product product) async {
     _products.add(product);
+    AppLogger.info('Product added: ${product.name}');
   }
 
   // Read
@@ -21,6 +20,7 @@ class InventoryRepository {
     try {
       return _products.firstWhere((product) => product.id == id);
     } catch (e) {
+      AppLogger.warning('Product not found with ID: $id');
       return null;
     }
   }
@@ -36,17 +36,29 @@ class InventoryRepository {
     ).toList();
   }
 
+  Future<List<String>> getCategories() async {
+    return _products.map((p) => p.category).toSet().toList()..sort();
+  }
+
+  Future<List<String>> getManufacturers() async {
+    return _products.map((p) => p.manufacturer).toSet().toList()..sort();
+  }
+
   // Update
   Future<void> updateProduct(Product product) async {
     final index = _products.indexWhere((p) => p.id == product.id);
     if (index != -1) {
       _products[index] = product;
+      AppLogger.info('Product updated: ${product.name}');
+    } else {
+      AppLogger.warning('Product not found for update: ${product.id}');
     }
   }
 
   // Delete
   Future<void> deleteProduct(String id) async {
     _products.removeWhere((product) => product.id == id);
+    AppLogger.info('Product deleted: $id');
   }
 
   // Stock Management
@@ -58,6 +70,10 @@ class InventoryRepository {
         updatedAt: DateTime.now(),
       );
       await updateProduct(updatedProduct);
+      AppLogger.info('Stock updated for product: ${product.name}');
+    } else {
+      AppLogger.error('Product not found for stock update: $id');
+      throw Exception('Product not found');
     }
   }
 
@@ -71,84 +87,108 @@ class InventoryRepository {
     return _products.where((product) => product.isExpiringSoon).toList();
   }
 
-  // Filter Products
-  Future<List<Product>> filterProducts({
+  List<Product> filterProducts({
     String? category,
     String? manufacturer,
     bool? lowStock,
     bool? expiringSoon,
     DateTime? expiryDateStart,
     DateTime? expiryDateEnd,
-  }) async {
+  }) {
     return _products.where((product) {
-      if (category != null && product.category != category) return false;
-      if (manufacturer != null && product.manufacturer != manufacturer) return false;
-      if (lowStock != null && product.isLowStock != lowStock) return false;
-      if (expiringSoon != null && product.isExpiringSoon != expiringSoon) return false;
+      if (category != null && category != 'All' && product.category != category) return false;
+      if (manufacturer != null && manufacturer != 'All' && product.manufacturer != manufacturer) return false;
+      if (lowStock == true && !product.isLowStock) return false;
+      if (expiringSoon == true && !product.isExpiringSoon) return false;
       if (expiryDateStart != null && product.expiryDate.isBefore(expiryDateStart)) return false;
       if (expiryDateEnd != null && product.expiryDate.isAfter(expiryDateEnd)) return false;
       return true;
     }).toList();
   }
 
-  // Get Categories
-  Future<List<String>> getCategories() async {
-    return _products.map((p) => p.category).toSet().toList()..sort();
-  }
-
-  // Get Manufacturers
-  Future<List<String>> getManufacturers() async {
-    return _products.map((p) => p.manufacturer).toSet().toList()..sort();
-  }
-
-  // Generate sample data
   static List<Product> _generateSampleProducts() {
-    final categories = [
-      'Antibiotics',
-      'Painkillers',
-      'Vitamins',
-      'First Aid',
-      'Chronic Care',
-      'Diabetes Care',
-      'Heart Care',
-      'Respiratory Care'
-    ];
-    
-    final manufacturers = [
-      'PharmaCorp',
-      'MediLabs',
-      'HealthCare Inc',
-      'BioTech Solutions',
-      'Global Pharma'
-    ];
-
-    final locations = ['Shelf A', 'Shelf B', 'Shelf C', 'Cold Storage', 'Secure Cabinet'];
-
-    final now = DateTime(2025, 1, 6); // Using the provided current time
-    
-    return List.generate(50, (index) {
-      final category = categories[index % categories.length];
-      final manufacturer = manufacturers[index % manufacturers.length];
-      final location = locations[index % locations.length];
-      final quantity = (index * 7 + 10) % 100;
-      final unitPrice = (index * 2.5 + 5.99).roundToDouble();
-      
-      return Product(
-        id: UuidGenerator.generate(),
-        name: 'Product ${index + 1}',
-        description: 'Description for Product ${index + 1}',
-        category: category,
-        manufacturer: manufacturer,
-        batchNumber: 'BATCH${(index + 1).toString().padLeft(4, '0')}',
-        expiryDate: now.add(Duration(days: 30 * (index % 24 + 1))),
-        quantity: quantity,
-        price: unitPrice,
-        unit: 'units',
+    final now = DateTime.now();
+    return [
+      Product(
+        id: '1',
+        name: 'Paracetamol 500mg',
+        description: 'Pain relief and fever reducer',
+        category: 'Pain Relief',
+        price: 5.99,
+        quantity: 1000,
+        unit: 'tablets',
+        manufacturer: 'PharmaCo',
+        expiryDate: now.add(const Duration(days: 365)),
+        createdAt: now,
+        updatedAt: now,
+        minimumStockLevel: 200,
+        batchNumber: 'BATCH001',
+        location: 'Shelf A1',
+      ),
+      Product(
+        id: '2',
+        name: 'Amoxicillin 250mg',
+        description: 'Antibiotic medication',
+        category: 'Antibiotics',
+        price: 12.99,
+        quantity: 150,
+        unit: 'capsules',
+        manufacturer: 'MediPharma',
+        expiryDate: now.add(const Duration(days: 180)),
+        createdAt: now,
+        updatedAt: now,
+        minimumStockLevel: 100,
+        batchNumber: 'BATCH002',
+        location: 'Shelf B2',
+      ),
+      Product(
+        id: '3',
+        name: 'Insulin Regular',
+        description: 'Diabetes medication',
+        category: 'Diabetes',
+        price: 45.99,
+        quantity: 50,
+        unit: 'vials',
+        manufacturer: 'DiabeCare',
+        expiryDate: now.add(const Duration(days: 90)),
+        createdAt: now,
+        updatedAt: now,
         minimumStockLevel: 20,
-        location: location,
-        createdAt: now.subtract(Duration(days: index * 2)),
-        updatedAt: now.subtract(Duration(days: index)),
-      );
-    });
+        batchNumber: 'BATCH003',
+        location: 'Refrigerator 1',
+      ),
+      Product(
+        id: '4',
+        name: 'Vitamin C 1000mg',
+        description: 'Immune system support',
+        category: 'Vitamins',
+        price: 15.99,
+        quantity: 500,
+        unit: 'tablets',
+        manufacturer: 'VitaHealth',
+        expiryDate: now.add(const Duration(days: 730)),
+        createdAt: now,
+        updatedAt: now,
+        minimumStockLevel: 100,
+        batchNumber: 'BATCH004',
+        location: 'Shelf C3',
+      ),
+      Product(
+        id: '5',
+        name: 'Ibuprofen 400mg',
+        description: 'Anti-inflammatory medication',
+        category: 'Pain Relief',
+        price: 7.99,
+        quantity: 80,
+        unit: 'tablets',
+        manufacturer: 'PharmaCo',
+        expiryDate: now.add(const Duration(days: 45)),
+        createdAt: now,
+        updatedAt: now,
+        minimumStockLevel: 100,
+        batchNumber: 'BATCH005',
+        location: 'Shelf A2',
+      ),
+    ];
   }
 }

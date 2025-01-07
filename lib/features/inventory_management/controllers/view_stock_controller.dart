@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'dart:math' as math;
 import '../../../data/services/inventory_service.dart';
 import '../../../utils/logging/logger.dart';
 import '../models/product_model.dart';
@@ -10,8 +11,8 @@ class ViewStockController extends GetxController {
   final RxList<Product> products = <Product>[].obs;
   final RxBool isLoading = false.obs;
   final RxString searchQuery = ''.obs;
-  final RxString selectedCategory = ''.obs;
-  final RxString selectedManufacturer = ''.obs;
+  final RxString selectedCategory = 'All'.obs;
+  final RxString selectedManufacturer = 'All'.obs;
   final RxBool showLowStock = false.obs;
   final RxBool showExpiringSoon = false.obs;
   final Rx<DateTime?> expiryDateStart = Rx<DateTime?>(null);
@@ -20,6 +21,8 @@ class ViewStockController extends GetxController {
   final RxList<String> manufacturers = <String>[].obs;
   final RxString sortBy = ''.obs;
   final RxBool sortAscending = true.obs;
+  final RxInt currentPage = 0.obs;
+  final RxInt rowsPerPage = 10.obs;
 
   ViewStockController(this._inventoryService);
 
@@ -39,7 +42,13 @@ class ViewStockController extends GetxController {
       ]);
     } catch (e) {
       AppLogger.error('Failed to load initial data: $e');
-      _showError('Failed to load initial data', e);
+      Get.snackbar(
+        'Error',
+        'Failed to load initial data',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -49,9 +58,10 @@ class ViewStockController extends GetxController {
     try {
       final loadedCategories = await _inventoryService.getCategories();
       categories.value = ['All', ...loadedCategories];
+      selectedCategory.value = 'All';
     } catch (e) {
       AppLogger.error('Failed to load categories: $e');
-      _showError('Failed to load categories', e);
+      rethrow;
     }
   }
 
@@ -59,9 +69,10 @@ class ViewStockController extends GetxController {
     try {
       final loadedManufacturers = await _inventoryService.getManufacturers();
       manufacturers.value = ['All', ...loadedManufacturers];
+      selectedManufacturer.value = 'All';
     } catch (e) {
       AppLogger.error('Failed to load manufacturers: $e');
-      _showError('Failed to load manufacturers', e);
+      rethrow;
     }
   }
 
@@ -72,8 +83,8 @@ class ViewStockController extends GetxController {
         searchQuery: searchQuery.value.isEmpty ? null : searchQuery.value,
         category: selectedCategory.value == 'All' ? null : selectedCategory.value,
         manufacturer: selectedManufacturer.value == 'All' ? null : selectedManufacturer.value,
-        lowStock: showLowStock.value ? true : null,
-        expiringSoon: showExpiringSoon.value ? true : null,
+        lowStock: showLowStock.value,
+        expiringSoon: showExpiringSoon.value,
         expiryDateStart: expiryDateStart.value,
         expiryDateEnd: expiryDateEnd.value,
       );
@@ -90,7 +101,13 @@ class ViewStockController extends GetxController {
       products.value = filteredProducts;
     } catch (e) {
       AppLogger.error('Failed to load products: $e');
-      _showError('Failed to load products', e);
+      Get.snackbar(
+        'Error',
+        'Failed to load products',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -106,91 +123,49 @@ class ViewStockController extends GetxController {
         return product.manufacturer;
       case 'quantity':
         return product.quantity;
-      case 'expiryDate':
-        return product.expiryDate;
       case 'price':
         return product.price;
+      case 'expiryDate':
+        return product.expiryDate;
       default:
         return '';
     }
   }
 
-  Future<void> updateSort(String field) async {
-    if (sortBy.value == field) {
-      sortAscending.value = !sortAscending.value;
-    } else {
-      sortBy.value = field;
-      sortAscending.value = true;
-    }
-    await loadProducts();
+  void searchProducts(String query) {
+    searchQuery.value = query;
+    loadProducts();
   }
 
-  Future<void> updateFilters({
+  void updateFilters({
     String? category,
     String? manufacturer,
     bool? lowStock,
     bool? expiringSoon,
     DateTime? startDate,
     DateTime? endDate,
-  }) async {
+  }) {
     if (category != null) selectedCategory.value = category;
     if (manufacturer != null) selectedManufacturer.value = manufacturer;
     if (lowStock != null) showLowStock.value = lowStock;
     if (expiringSoon != null) showExpiringSoon.value = expiringSoon;
     if (startDate != null) expiryDateStart.value = startDate;
     if (endDate != null) expiryDateEnd.value = endDate;
-    await loadProducts();
+    loadProducts();
   }
 
-  Future<void> searchProducts(String query) async {
-    searchQuery.value = query;
-    await loadProducts();
-  }
-
-  Future<void> editProduct(String id) async {
-    final result = await Get.toNamed('/edit-stock', arguments: id);
-    if (result == true) {
-      await loadProducts();
+  void updateSort(String field) {
+    if (sortBy.value == field) {
+      sortAscending.value = !sortAscending.value;
+    } else {
+      sortBy.value = field;
+      sortAscending.value = true;
     }
+    loadProducts();
   }
 
-  Future<void> deleteProduct(String id) async {
-    final confirm = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('Confirm Delete'),
-        content: const Text('Are you sure you want to delete this product?'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Get.back(result: true),
-            style: TextButton.styleFrom(
-              foregroundColor: Get.theme.colorScheme.error,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      try {
-        await _inventoryService.deleteProduct(id);
-        await loadProducts();
-        Get.snackbar(
-          'Success',
-          'Product deleted successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Get.theme.colorScheme.primaryContainer,
-          colorText: Get.theme.colorScheme.onPrimaryContainer,
-        );
-      } catch (e) {
-        AppLogger.error('Failed to delete product: $e');
-        _showError('Failed to delete product', e);
-      }
-    }
+  void refreshProducts() {
+    loadProducts();
   }
 
   String formatDate(DateTime date) {
@@ -201,22 +176,17 @@ class ViewStockController extends GetxController {
     return NumberFormat.currency(symbol: '\$').format(amount);
   }
 
-  String formatNumber(int number) {
-    return NumberFormat('#,##0').format(number);
+  void updatePagination(int? page, int? rowsPerPage) {
+    if (page != null) currentPage.value = page;
+    if (rowsPerPage != null) this.rowsPerPage.value = rowsPerPage;
   }
 
-  void _showError(String title, dynamic error) {
-    Get.snackbar(
-      title,
-      error.toString(),
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Get.theme.colorScheme.errorContainer,
-      colorText: Get.theme.colorScheme.onErrorContainer,
-      duration: const Duration(seconds: 5),
-    );
+  List<Product> get paginatedProducts {
+    final start = currentPage.value * rowsPerPage.value;
+    final end = start + rowsPerPage.value;
+    if (start >= products.length) return [];
+    return products.sublist(start, end > products.length ? products.length : end);
   }
 
-  void refreshProducts() {
-    loadProducts();
-  }
+  int get totalProducts => products.length;
 }

@@ -11,6 +11,69 @@ class InventoryException implements Exception {
 
   /// Default constructor with a generic error message.
   const InventoryException([this.message = 'An unexpected inventory error occurred. Please try again.']);
+
+  @override
+  String toString() => message;
+}
+
+/// Exception class for handling authentication-related errors.
+class AuthException implements Exception {
+  /// The associated error message.
+  final String message;
+
+  /// Default constructor with a generic error message.
+  const AuthException([this.message = 'An authentication error occurred. Please try again.']);
+
+  @override
+  String toString() => message;
+}
+
+/// Exception class for handling network-related errors.
+class NetworkException implements Exception {
+  /// The associated error message.
+  final String message;
+
+  /// Default constructor with a generic error message.
+  const NetworkException([this.message = 'A network error occurred. Please check your connection.']);
+
+  @override
+  String toString() => message;
+}
+
+/// Exception class for handling validation-related errors.
+class ValidationException implements Exception {
+  /// The associated error message.
+  final String message;
+
+  /// Default constructor with a generic error message.
+  const ValidationException([this.message = 'Invalid input provided. Please check your data.']);
+
+  @override
+  String toString() => message;
+}
+
+/// Exception class for handling database-related errors.
+class DatabaseException implements Exception {
+  /// The associated error message.
+  final String message;
+
+  /// Default constructor with a generic error message.
+  const DatabaseException([this.message = 'A database error occurred. Please try again.']);
+
+  @override
+  String toString() => message;
+}
+
+/// Exception class for handling permission-related errors.
+class PermissionException implements Exception {
+  /// The associated error message.
+  final String message;
+
+  /// Default constructor with a generic error message.
+  const PermissionException([this.message = 'You do not have permission to perform this action.']);
+
+  @override
+  String toString() => message;
 }
 
 class InventoryService {
