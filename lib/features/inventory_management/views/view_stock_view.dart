@@ -106,12 +106,74 @@ class ViewStockView extends GetView<ViewStockController> {
                   selected: controller.showExpiringSoon.value,
                   onSelected: (value) => controller.updateFilters(expiringSoon: value),
                 )),
+                const SizedBox(width: AppSizes.padding),
+                TextButton.icon(
+                  onPressed: () => _showDateRangePicker(context),
+                  icon: const Icon(Icons.date_range),
+                  label: Obx(() {
+                    final start = controller.expiryDateStart.value;
+                    final end = controller.expiryDateEnd.value;
+                    if (start != null && end != null) {
+                      return Text(
+                        '${controller.formatDate(start)} - ${controller.formatDate(end)}',
+                        style: const TextStyle(fontSize: 14),
+                      );
+                    }
+                    return const Text('Select Expiry Date Range');
+                  }),
+                ),
+                const SizedBox(width: AppSizes.padding),
+                if (controller.expiryDateStart.value != null)
+                  IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () => controller.updateFilters(
+                      startDate: null,
+                      endDate: null,
+                    ),
+                    tooltip: 'Clear date range',
+                  ),
               ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _showDateRangePicker(BuildContext context) async {
+    final initialDateRange = controller.expiryDateStart.value != null && controller.expiryDateEnd.value != null
+        ? DateTimeRange(
+            start: controller.expiryDateStart.value!,
+            end: controller.expiryDateEnd.value!,
+          )
+        : null;
+
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+      initialDateRange: initialDateRange,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: Theme.of(context).primaryColor,
+              onPrimary: Theme.of(context).colorScheme.onPrimary,
+              surface: Theme.of(context).colorScheme.surface,
+              onSurface: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      controller.updateFilters(
+        startDate: picked.start,
+        endDate: picked.end,
+      );
+    }
   }
 
   Widget _buildStockTable(BuildContext context) {

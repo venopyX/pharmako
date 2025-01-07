@@ -1,7 +1,7 @@
-// TODO: Implement controller logic for adding stock items.
-
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/services/inventory_service.dart';
+import '../../../utils/logging/logger.dart';
 
 class AddStockController extends GetxController {
   final InventoryService _inventoryService;
@@ -22,30 +22,114 @@ class AddStockController extends GetxController {
 
   // Form validation
   final RxBool isValid = false.obs;
+  final RxMap<String, String> errors = <String, String>{}.obs;
+
+  // Predefined lists
+  final RxList<String> categories = <String>[
+    'Pain Relief',
+    'Antibiotics',
+    'Diabetes',
+    'Vitamins',
+    'First Aid',
+    'Chronic Care',
+    'Heart Care',
+    'Respiratory Care',
+    'Others'
+  ].obs;
+
+  final RxList<String> units = <String>[
+    'tablets',
+    'capsules',
+    'vials',
+    'bottles',
+    'strips',
+    'boxes',
+    'tubes',
+    'pieces'
+  ].obs;
+
+  final RxList<String> manufacturers = <String>[
+    'PharmaCo',
+    'MediPharma',
+    'DiabeCare',
+    'VitaHealth',
+    'Others'
+  ].obs;
+
+  final RxList<String> locations = <String>[
+    'Shelf A1',
+    'Shelf A2',
+    'Shelf B1',
+    'Shelf B2',
+    'Shelf C1',
+    'Shelf C2',
+    'Refrigerator 1',
+    'Refrigerator 2',
+    'Secure Cabinet'
+  ].obs;
 
   AddStockController(this._inventoryService);
 
+  @override
+  void onInit() {
+    super.onInit();
+    loadCategories();
+    loadManufacturers();
+  }
+
+  Future<void> loadCategories() async {
+    try {
+      final loadedCategories = await _inventoryService.getCategories();
+      if (loadedCategories.isNotEmpty) {
+        categories.value = loadedCategories;
+      }
+    } catch (e) {
+      AppLogger.error('Failed to load categories: $e');
+    }
+  }
+
+  Future<void> loadManufacturers() async {
+    try {
+      final loadedManufacturers = await _inventoryService.getManufacturers();
+      if (loadedManufacturers.isNotEmpty) {
+        manufacturers.value = loadedManufacturers;
+      }
+    } catch (e) {
+      AppLogger.error('Failed to load manufacturers: $e');
+    }
+  }
+
   void updateName(String value) {
     name.value = value;
+    validateField('name', value);
     validateForm();
   }
 
   void updateDescription(String value) {
     description.value = value;
+    validateField('description', value);
     validateForm();
   }
 
   void updateCategory(String? value) {
     if (value != null) {
       category.value = value;
+      validateField('category', value);
       validateForm();
     }
   }
 
   void updatePrice(String value) {
     try {
-      price.value = double.parse(value);
+      final newPrice = double.parse(value);
+      if (newPrice >= 0) {
+        price.value = newPrice;
+        errors.remove('price');
+      } else {
+        errors['price'] = 'Price must be positive';
+      }
     } catch (_) {
+      errors['price'] = 'Invalid price format';
       price.value = 0.0;
     }
     validateForm();
@@ -53,8 +137,15 @@ class AddStockController extends GetxController {
 
   void updateQuantity(String value) {
     try {
-      quantity.value = int.parse(value);
+      final newQuantity = int.parse(value);
+      if (newQuantity >= 0) {
+        quantity.value = newQuantity;
+        errors.remove('quantity');
+      } else {
+        errors['quantity'] = 'Quantity must be positive';
+      }
     } catch (_) {
+      errors['quantity'] = 'Invalid quantity format';
       quantity.value = 0;
     }
     validateForm();
@@ -63,24 +154,40 @@ class AddStockController extends GetxController {
   void updateUnit(String? value) {
     if (value != null) {
       unit.value = value;
+      validateField('unit', value);
       validateForm();
     }
   }
 
-  void updateManufacturer(String value) {
-    manufacturer.value = value;
-    validateForm();
+  void updateManufacturer(String? value) {
+    if (value != null) {
+      manufacturer.value = value;
+      validateField('manufacturer', value);
+      validateForm();
+    }
   }
 
   void updateExpiryDate(DateTime value) {
-    expiryDate.value = value;
+    if (value.isAfter(DateTime.now())) {
+      expiryDate.value = value;
+      errors.remove('expiryDate');
+    } else {
+      errors['expiryDate'] = 'Expiry date must be in the future';
+    }
     validateForm();
   }
 
   void updateMinimumStockLevel(String value) {
     try {
-      minimumStockLevel.value = int.parse(value);
+      final newLevel = int.parse(value);
+      if (newLevel >= 0) {
+        minimumStockLevel.value = newLevel;
+        errors.remove('minimumStockLevel');
+      } else {
+        errors['minimumStockLevel'] = 'Minimum stock level must be positive';
+      }
     } catch (_) {
+      errors['minimumStockLevel'] = 'Invalid format';
       minimumStockLevel.value = 0;
     }
     validateForm();
@@ -88,12 +195,24 @@ class AddStockController extends GetxController {
 
   void updateBatchNumber(String value) {
     batchNumber.value = value;
+    validateField('batchNumber', value);
     validateForm();
   }
 
-  void updateLocation(String value) {
-    location.value = value;
-    validateForm();
+  void updateLocation(String? value) {
+    if (value != null) {
+      location.value = value;
+      validateField('location', value);
+      validateForm();
+    }
+  }
+
+  void validateField(String field, String value) {
+    if (value.isEmpty) {
+      errors[field] = '$field is required';
+    } else {
+      errors.remove(field);
+    }
   }
 
   void validateForm() {
@@ -107,7 +226,8 @@ class AddStockController extends GetxController {
         expiryDate.value.isAfter(DateTime.now()) &&
         minimumStockLevel.value >= 0 &&
         batchNumber.value.isNotEmpty &&
-        location.value.isNotEmpty;
+        location.value.isNotEmpty &&
+        errors.isEmpty;
   }
 
   Future<void> addProduct() async {
@@ -129,22 +249,30 @@ class AddStockController extends GetxController {
         location: location.value,
       );
 
+      Get.back(result: true);
       Get.snackbar(
         'Success',
         'Product added successfully',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
       );
-
-      clearForm();
     } catch (e) {
+      AppLogger.error('Failed to add product: $e');
       Get.snackbar(
         'Error',
         'Failed to add product: $e',
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
       );
     } finally {
       isLoading.value = false;
     }
+  }
+
+  String? getError(String field) {
+    return errors[field];
   }
 
   void clearForm() {
@@ -159,6 +287,11 @@ class AddStockController extends GetxController {
     minimumStockLevel.value = 0;
     batchNumber.value = '';
     location.value = '';
+    errors.clear();
     isValid.value = false;
+  }
+
+  String formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 }

@@ -26,13 +26,18 @@ class InventoryRepository {
   }
 
   Future<List<Product>> searchProducts(String query) async {
+    if (query.isEmpty) return _products;
+    
     query = query.toLowerCase();
     return _products.where((product) =>
         product.name.toLowerCase().contains(query) ||
         product.description.toLowerCase().contains(query) ||
         product.category.toLowerCase().contains(query) ||
         product.manufacturer.toLowerCase().contains(query) ||
-        product.batchNumber.toLowerCase().contains(query)
+        product.batchNumber.toLowerCase().contains(query) ||
+        product.location.toLowerCase().contains(query) ||
+        product.quantity.toString().contains(query) ||
+        product.price.toString().contains(query)
     ).toList();
   }
 
