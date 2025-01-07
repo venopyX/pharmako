@@ -1,7 +1,5 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import '../../../utils/constants/sizes.dart';
 import '../controllers/view_stock_controller.dart';
 import '../models/product_model.dart';
@@ -51,89 +49,93 @@ class ViewStockView extends GetView<ViewStockController> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppSizes.padding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Wrap(
+          spacing: AppSizes.padding,
+          runSpacing: AppSizes.padding,
+          alignment: WrapAlignment.start,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Search Products',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: controller.searchProducts,
-                  ),
+            SizedBox(
+              width: 300,
+              child: TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Search Products',
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(width: AppSizes.padding),
-                Obx(() => DropdownButton<String>(
-                  value: controller.selectedCategory.value,
-                  hint: const Text('Category'),
-                  items: controller.categories.map((category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Text(category),
-                    );
-                  }).toList(),
-                  onChanged: (value) => controller.updateFilters(category: value),
-                )),
-                const SizedBox(width: AppSizes.padding),
-                Obx(() => DropdownButton<String>(
-                  value: controller.selectedManufacturer.value,
-                  hint: const Text('Manufacturer'),
-                  items: controller.manufacturers.map((manufacturer) {
-                    return DropdownMenuItem(
-                      value: manufacturer,
-                      child: Text(manufacturer),
-                    );
-                  }).toList(),
-                  onChanged: (value) => controller.updateFilters(manufacturer: value),
-                )),
-              ],
+                onChanged: controller.searchProducts,
+              ),
             ),
-            const SizedBox(height: AppSizes.padding),
-            Row(
-              children: [
-                Obx(() => FilterChip(
-                  label: const Text('Low Stock'),
-                  selected: controller.showLowStock.value,
-                  onSelected: (value) => controller.updateFilters(lowStock: value),
-                )),
-                const SizedBox(width: AppSizes.padding),
-                Obx(() => FilterChip(
-                  label: const Text('Expiring Soon'),
-                  selected: controller.showExpiringSoon.value,
-                  onSelected: (value) => controller.updateFilters(expiringSoon: value),
-                )),
-                const SizedBox(width: AppSizes.padding),
-                TextButton.icon(
-                  onPressed: () => _showDateRangePicker(context),
-                  icon: const Icon(Icons.date_range),
-                  label: Obx(() {
-                    final start = controller.expiryDateStart.value;
-                    final end = controller.expiryDateEnd.value;
-                    if (start != null && end != null) {
-                      return Text(
-                        '${controller.formatDate(start)} - ${controller.formatDate(end)}',
-                        style: const TextStyle(fontSize: 14),
-                      );
-                    }
-                    return const Text('Select Expiry Date Range');
-                  }),
+            SizedBox(
+              width: 200,
+              child: Obx(() => DropdownButtonFormField<String>(
+                value: controller.selectedCategory.value.isEmpty ? null : controller.selectedCategory.value,
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(width: AppSizes.padding),
-                if (controller.expiryDateStart.value != null)
-                  IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () => controller.updateFilters(
-                      startDate: null,
-                      endDate: null,
-                    ),
-                    tooltip: 'Clear date range',
-                  ),
-              ],
+                items: controller.categories.map((category) {
+                  return DropdownMenuItem(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+                onChanged: (value) => controller.updateFilters(category: value),
+              )),
             ),
+            SizedBox(
+              width: 200,
+              child: Obx(() => DropdownButtonFormField<String>(
+                value: controller.selectedManufacturer.value.isEmpty ? null : controller.selectedManufacturer.value,
+                decoration: const InputDecoration(
+                  labelText: 'Manufacturer',
+                  border: OutlineInputBorder(),
+                ),
+                items: controller.manufacturers.map((manufacturer) {
+                  return DropdownMenuItem(
+                    value: manufacturer,
+                    child: Text(manufacturer),
+                  );
+                }).toList(),
+                onChanged: (value) => controller.updateFilters(manufacturer: value),
+              )),
+            ),
+            Obx(() => FilterChip(
+              label: const Text('Low Stock'),
+              selected: controller.showLowStock.value,
+              onSelected: (value) => controller.updateFilters(lowStock: value),
+            )),
+            Obx(() => FilterChip(
+              label: const Text('Expiring Soon'),
+              selected: controller.showExpiringSoon.value,
+              onSelected: (value) => controller.updateFilters(expiringSoon: value),
+            )),
+            TextButton.icon(
+              onPressed: () => _showDateRangePicker(context),
+              icon: const Icon(Icons.date_range),
+              label: Obx(() {
+                final start = controller.expiryDateStart.value;
+                final end = controller.expiryDateEnd.value;
+                if (start != null && end != null) {
+                  return Text(
+                    '${controller.formatDate(start)} - ${controller.formatDate(end)}',
+                    style: const TextStyle(fontSize: 14),
+                  );
+                }
+                return const Text('Expiry Date Range');
+              }),
+            ),
+            if (controller.expiryDateStart.value != null || 
+                controller.expiryDateEnd.value != null ||
+                controller.selectedCategory.value.isNotEmpty ||
+                controller.selectedManufacturer.value.isNotEmpty ||
+                controller.showLowStock.value ||
+                controller.showExpiringSoon.value)
+              TextButton.icon(
+                onPressed: controller.clearFilters,
+                icon: const Icon(Icons.clear_all),
+                label: const Text('Clear Filters'),
+              ),
           ],
         ),
       ),
@@ -151,7 +153,7 @@ class ViewStockView extends GetView<ViewStockController> {
     final picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
       initialDateRange: initialDateRange,
       builder: (context, child) {
         return Theme(

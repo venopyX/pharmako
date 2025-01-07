@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/services/inventory_service.dart';
 import '../../../utils/logging/logger.dart';
+import '../models/product_model.dart';
 
 class AddStockController extends GetxController {
   final InventoryService _inventoryService;
@@ -73,6 +74,22 @@ class AddStockController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    final product = Get.arguments as Product?;
+    if (product != null) {
+      // Editing existing product
+      name.value = product.name;
+      description.value = product.description;
+      category.value = product.category;
+      price.value = product.price;
+      quantity.value = product.quantity;
+      unit.value = product.unit;
+      manufacturer.value = product.manufacturer;
+      expiryDate.value = product.expiryDate;
+      minimumStockLevel.value = product.minimumStockLevel;
+      batchNumber.value = product.batchNumber;
+      location.value = product.location;
+      validateForm();
+    }
     loadCategories();
     loadManufacturers();
   }
@@ -235,33 +252,42 @@ class AddStockController extends GetxController {
 
     isLoading.value = true;
     try {
-      await _inventoryService.addProduct(
-        name: name.value,
-        description: description.value,
-        category: category.value,
-        price: price.value,
-        quantity: quantity.value,
-        unit: unit.value,
-        manufacturer: manufacturer.value,
-        expiryDate: expiryDate.value,
-        minimumStockLevel: minimumStockLevel.value,
-        batchNumber: batchNumber.value,
-        location: location.value,
-      );
+      final product = Get.arguments as Product?;
+      final Map<String, dynamic> productData = {
+        'name': name.value,
+        'description': description.value,
+        'category': category.value,
+        'price': price.value,
+        'quantity': quantity.value,
+        'unit': unit.value,
+        'manufacturer': manufacturer.value,
+        'expiryDate': expiryDate.value,
+        'minimumStockLevel': minimumStockLevel.value,
+        'batchNumber': batchNumber.value,
+        'location': location.value,
+      };
+
+      if (product != null) {
+        // Update existing product
+        await _inventoryService.updateProduct(product.id, productData);
+      } else {
+        // Add new product
+        await _inventoryService.addProduct(productData);
+      }
 
       Get.back(result: true);
       Get.snackbar(
         'Success',
-        'Product added successfully',
+        product != null ? 'Product updated successfully' : 'Product added successfully',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
     } catch (e) {
-      AppLogger.error('Failed to add product: $e');
+      AppLogger.error('Failed to ${Get.arguments != null ? 'update' : 'add'} product: $e');
       Get.snackbar(
         'Error',
-        'Failed to add product: $e',
+        'Failed to ${Get.arguments != null ? 'update' : 'add'} product: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,

@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'dart:math' as math;
 import '../../../data/services/inventory_service.dart';
 import '../../../utils/logging/logger.dart';
 import '../models/product_model.dart';
 
 class ViewStockController extends GetxController {
   final InventoryService _inventoryService;
-  final RxList<Product> products = <Product>[].obs;
-  final RxBool isLoading = false.obs;
+  
+  final RxList<Product> allProducts = <Product>[].obs;
+  final RxList<Product> filteredProducts = <Product>[].obs;
+  
   final RxString searchQuery = ''.obs;
-  final RxString selectedCategory = 'All'.obs;
-  final RxString selectedManufacturer = 'All'.obs;
+  final RxString selectedCategory = ''.obs;
+  final RxString selectedManufacturer = ''.obs;
   final RxBool showLowStock = false.obs;
   final RxBool showExpiringSoon = false.obs;
   final Rx<DateTime?> expiryDateStart = Rx<DateTime?>(null);
   final Rx<DateTime?> expiryDateEnd = Rx<DateTime?>(null);
+  
   final RxList<String> categories = <String>[].obs;
   final RxList<String> manufacturers = <String>[].obs;
+  
+  final RxBool isLoading = false.obs;
   final RxString sortBy = ''.obs;
   final RxBool sortAscending = true.obs;
   final RxInt currentPage = 0.obs;
@@ -29,22 +33,22 @@ class ViewStockController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadInitialData();
+    loadProducts();
+    loadCategories();
+    loadManufacturers();
   }
 
-  Future<void> loadInitialData() async {
+  Future<void> loadProducts() async {
     try {
       isLoading.value = true;
-      await Future.wait([
-        loadCategories(),
-        loadManufacturers(),
-        loadProducts(),
-      ]);
+      final products = await _inventoryService.getProducts();
+      allProducts.value = products;
+      applyFilters(); // This will update filteredProducts
     } catch (e) {
-      AppLogger.error('Failed to load initial data: $e');
+      AppLogger.error('Failed to load products: $e');
       Get.snackbar(
         'Error',
-        'Failed to load initial data',
+        'Failed to load products: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -58,10 +62,8 @@ class ViewStockController extends GetxController {
     try {
       final loadedCategories = await _inventoryService.getCategories();
       categories.value = ['All', ...loadedCategories];
-      selectedCategory.value = 'All';
     } catch (e) {
       AppLogger.error('Failed to load categories: $e');
-      rethrow;
     }
   }
 
@@ -69,48 +71,121 @@ class ViewStockController extends GetxController {
     try {
       final loadedManufacturers = await _inventoryService.getManufacturers();
       manufacturers.value = ['All', ...loadedManufacturers];
-      selectedManufacturer.value = 'All';
     } catch (e) {
       AppLogger.error('Failed to load manufacturers: $e');
-      rethrow;
     }
   }
 
-  Future<void> loadProducts() async {
-    try {
-      isLoading.value = true;
-      final filteredProducts = await _inventoryService.getProducts(
-        searchQuery: searchQuery.value.isEmpty ? null : searchQuery.value,
-        category: selectedCategory.value == 'All' ? null : selectedCategory.value,
-        manufacturer: selectedManufacturer.value == 'All' ? null : selectedManufacturer.value,
-        lowStock: showLowStock.value,
-        expiringSoon: showExpiringSoon.value,
-        expiryDateStart: expiryDateStart.value,
-        expiryDateEnd: expiryDateEnd.value,
-      );
-      
-      if (sortBy.value.isNotEmpty) {
-        filteredProducts.sort((a, b) {
-          dynamic valueA = _getSortValue(a, sortBy.value);
-          dynamic valueB = _getSortValue(b, sortBy.value);
-          int comparison = valueA.compareTo(valueB);
-          return sortAscending.value ? comparison : -comparison;
-        });
-      }
-      
-      products.value = filteredProducts;
-    } catch (e) {
-      AppLogger.error('Failed to load products: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to load products',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
+  void searchProducts(String query) {
+    searchQuery.value = query;
+    applyFilters();
+  }
+
+  void updateFilters({
+    String? category,
+    String? manufacturer,
+    bool? lowStock,
+    bool? expiringSoon,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) {
+    if (category != null) selectedCategory.value = category;
+    if (manufacturer != null) selectedManufacturer.value = manufacturer;
+    if (lowStock != null) showLowStock.value = lowStock;
+    if (expiringSoon != null) showExpiringSoon.value = expiringSoon;
+    if (startDate != null || startDate == null) expiryDateStart.value = startDate;
+    if (endDate != null || endDate == null) expiryDateEnd.value = endDate;
+    
+    applyFilters();
+  }
+
+  void clearFilters() {
+    selectedCategory.value = '';
+    selectedManufacturer.value = '';
+    showLowStock.value = false;
+    showExpiringSoon.value = false;
+    expiryDateStart.value = null;
+    expiryDateEnd.value = null;
+    searchQuery.value = '';
+    applyFilters();
+  }
+
+  void updateSort(String field) {
+    if (sortBy.value == field) {
+      sortAscending.value = !sortAscending.value;
+    } else {
+      sortBy.value = field;
+      sortAscending.value = true;
     }
+    applyFilters();
+  }
+
+  void applyFilters() {
+    var filtered = List<Product>.from(allProducts);
+
+    // Apply search filter
+    if (searchQuery.value.isNotEmpty) {
+      final query = searchQuery.value.toLowerCase();
+      filtered = filtered.where((product) =>
+        product.name.toLowerCase().contains(query) ||
+        product.description.toLowerCase().contains(query) ||
+        product.category.toLowerCase().contains(query) ||
+        product.manufacturer.toLowerCase().contains(query) ||
+        product.batchNumber.toLowerCase().contains(query) ||
+        product.location.toLowerCase().contains(query) ||
+        product.quantity.toString().contains(query) ||
+        product.price.toString().contains(query)
+      ).toList();
+    }
+
+    // Apply category filter
+    if (selectedCategory.value.isNotEmpty && selectedCategory.value != 'All') {
+      filtered = filtered.where((product) => 
+        product.category == selectedCategory.value
+      ).toList();
+    }
+
+    // Apply manufacturer filter
+    if (selectedManufacturer.value.isNotEmpty && selectedManufacturer.value != 'All') {
+      filtered = filtered.where((product) => 
+        product.manufacturer == selectedManufacturer.value
+      ).toList();
+    }
+
+    // Apply low stock filter
+    if (showLowStock.value) {
+      filtered = filtered.where((product) => 
+        product.quantity <= product.minimumStockLevel
+      ).toList();
+    }
+
+    // Apply expiring soon filter
+    if (showExpiringSoon.value) {
+      final thirtyDaysFromNow = DateTime.now().add(const Duration(days: 30));
+      filtered = filtered.where((product) => 
+        product.expiryDate.isBefore(thirtyDaysFromNow)
+      ).toList();
+    }
+
+    // Apply expiry date range filter
+    if (expiryDateStart.value != null && expiryDateEnd.value != null) {
+      filtered = filtered.where((product) =>
+        product.expiryDate.isAfter(expiryDateStart.value!) &&
+        product.expiryDate.isBefore(expiryDateEnd.value!.add(const Duration(days: 1)))
+      ).toList();
+    }
+
+    // Apply sorting
+    if (sortBy.value.isNotEmpty) {
+      filtered.sort((a, b) {
+        dynamic valueA = _getSortValue(a, sortBy.value);
+        dynamic valueB = _getSortValue(b, sortBy.value);
+        int comparison = valueA.compareTo(valueB);
+        return sortAscending.value ? comparison : -comparison;
+      });
+    }
+
+    filteredProducts.value = filtered;
   }
 
   dynamic _getSortValue(Product product, String field) {
@@ -132,61 +207,75 @@ class ViewStockController extends GetxController {
     }
   }
 
-  void searchProducts(String query) {
-    searchQuery.value = query;
-    loadProducts();
-  }
-
-  void updateFilters({
-    String? category,
-    String? manufacturer,
-    bool? lowStock,
-    bool? expiringSoon,
-    DateTime? startDate,
-    DateTime? endDate,
-  }) {
-    if (category != null) selectedCategory.value = category;
-    if (manufacturer != null) selectedManufacturer.value = manufacturer;
-    if (lowStock != null) showLowStock.value = lowStock;
-    if (expiringSoon != null) showExpiringSoon.value = expiringSoon;
-    if (startDate != null) expiryDateStart.value = startDate;
-    if (endDate != null) expiryDateEnd.value = endDate;
-    loadProducts();
-  }
-
-  void updateSort(String field) {
-    if (sortBy.value == field) {
-      sortAscending.value = !sortAscending.value;
-    } else {
-      sortBy.value = field;
-      sortAscending.value = true;
-    }
-    loadProducts();
-  }
-
-  void refreshProducts() {
-    loadProducts();
-  }
-
-  String formatDate(DateTime date) {
-    return DateFormat('MMM dd, yyyy').format(date);
-  }
-
-  String formatCurrency(double amount) {
-    return NumberFormat.currency(symbol: '\$').format(amount);
-  }
-
-  void updatePagination(int? page, int? rowsPerPage) {
-    if (page != null) currentPage.value = page;
-    if (rowsPerPage != null) this.rowsPerPage.value = rowsPerPage;
-  }
-
   List<Product> get paginatedProducts {
     final start = currentPage.value * rowsPerPage.value;
     final end = start + rowsPerPage.value;
-    if (start >= products.length) return [];
-    return products.sublist(start, end > products.length ? products.length : end);
+    if (start >= filteredProducts.length) return [];
+    return filteredProducts.sublist(start, end > filteredProducts.length ? filteredProducts.length : end);
   }
 
-  int get totalProducts => products.length;
+  int get totalProducts => filteredProducts.length;
+
+  void updatePagination(int? page, int? perPage) {
+    if (page != null) currentPage.value = page;
+    if (perPage != null) rowsPerPage.value = perPage;
+  }
+
+  Future<void> editProduct(Product product) async {
+    final result = await Get.toNamed('/add-stock', arguments: product);
+    if (result == true) {
+      loadProducts();
+    }
+  }
+
+  Future<void> deleteProduct(String id) async {
+    try {
+      await _inventoryService.deleteProduct(id);
+      loadProducts();
+      Get.snackbar(
+        'Success',
+        'Product deleted successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      AppLogger.error('Failed to delete product: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to delete product: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  String formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  // Formatters
+  String formatCurrency(double value) {
+    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    return formatter.format(value);
+  }
+
+  // Refresh products
+  Future<void> refreshProducts() async {
+    try {
+      isLoading.value = true;
+      await loadProducts();
+      AppLogger.info('Products refreshed successfully');
+    } catch (e) {
+      AppLogger.error('Error refreshing products: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to refresh products',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

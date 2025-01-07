@@ -11,33 +11,21 @@ class InventoryService {
   InventoryService(this._repository);
 
   // Add new product
-  Future<void> addProduct({
-    required String name,
-    required String description,
-    required String category,
-    required String manufacturer,
-    required String batchNumber,
-    required DateTime expiryDate,
-    required int quantity,
-    required double price,
-    required String unit,
-    required int minimumStockLevel,
-    required String location,
-  }) async {
+  Future<void> addProduct(Map<String, dynamic> productData) async {
     try {
       final product = Product(
         id: _uuid.v4(),
-        name: name,
-        description: description,
-        category: category,
-        manufacturer: manufacturer,
-        batchNumber: batchNumber,
-        expiryDate: expiryDate,
-        quantity: quantity,
-        price: price,
-        unit: unit,
-        minimumStockLevel: minimumStockLevel,
-        location: location,
+        name: productData['name'],
+        description: productData['description'],
+        category: productData['category'],
+        manufacturer: productData['manufacturer'],
+        batchNumber: productData['batchNumber'],
+        expiryDate: productData['expiryDate'],
+        quantity: productData['quantity'],
+        price: productData['price'],
+        unit: productData['unit'],
+        minimumStockLevel: productData['minimumStockLevel'],
+        location: productData['location'],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -61,12 +49,10 @@ class InventoryService {
     DateTime? expiryDateEnd,
   }) async {
     try {
-      var products = await _repository.getAllProducts();
-
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        products = await _repository.searchProducts(searchQuery);
+        return _repository.searchProducts(searchQuery);
       }
-
+      
       return _repository.filterProducts(
         category: category,
         manufacturer: manufacturer,
@@ -92,12 +78,30 @@ class InventoryService {
   }
 
   // Update product
-  Future<void> updateProduct(Product product) async {
+  Future<void> updateProduct(String id, Map<String, dynamic> productData) async {
     try {
-      await _repository.updateProduct(product.copyWith(
+      final existingProduct = await getProductById(id);
+      if (existingProduct == null) {
+        throw InventoryException('Product not found');
+      }
+
+      final updatedProduct = existingProduct.copyWith(
+        name: productData['name'],
+        description: productData['description'],
+        category: productData['category'],
+        manufacturer: productData['manufacturer'],
+        batchNumber: productData['batchNumber'],
+        expiryDate: productData['expiryDate'],
+        quantity: productData['quantity'],
+        price: productData['price'],
+        unit: productData['unit'],
+        minimumStockLevel: productData['minimumStockLevel'],
+        location: productData['location'],
         updatedAt: DateTime.now(),
-      ));
-      AppLogger.info('Product updated successfully: ${product.name}');
+      );
+
+      await _repository.updateProduct(updatedProduct);
+      AppLogger.info('Product updated successfully: ${updatedProduct.name}');
     } catch (e) {
       AppLogger.error('Failed to update product: $e');
       throw InventoryException('Failed to update product: $e');
