@@ -6,6 +6,7 @@ import '../features/home_dashboard/views/dashboard_view.dart';
 import '../features/inventory_management/views/add_stock_view.dart';
 import '../features/inventory_management/views/edit_stock_view.dart';
 import '../features/inventory_management/views/view_stock_view.dart';
+import '../features/inventory_management/views/low_stock_view.dart';
 import '../features/alerts_and_notifications/views/notification_view.dart';
 
 class AppRoutes {
@@ -28,6 +29,11 @@ class AppRoutes {
     GetPage(
       name: '/edit-stock',
       page: () => const EditStockView(),
+      binding: InventoryBinding(),
+    ),
+    GetPage(
+      name: '/low-stock',
+      page: () => const LowStockView(),
       binding: InventoryBinding(),
     ),
     GetPage(

@@ -37,7 +37,7 @@ class DashboardView extends GetView<DashboardController> {
             children: [
               _buildQuickActions(),
               const SizedBox(height: 24),
-              _buildSummaryCards(),
+              _buildSummaryCards(context),
               const SizedBox(height: 24),
               _buildSalesChart(),
               const SizedBox(height: 24),
@@ -94,50 +94,57 @@ class DashboardView extends GetView<DashboardController> {
     );
   }
 
-  Widget _buildSummaryCards() {
-    return GridView.count(
-      crossAxisCount: _getGridCrossAxisCount(Get.width),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      children: [
-        _buildSummaryCard(
-          'Total Products',
-          controller.summary.value.totalProducts.toString(),
-          Icons.inventory,
-          Colors.blue,
-          () => Get.toNamed('/inventory'),
-        ),
-        _buildSummaryCard(
-          'Low Stock Items',
-          controller.summary.value.lowStockItems.toString(),
-          Icons.warning,
-          Colors.orange,
-          () => Get.toNamed('/low-stock'),
-        ),
-        _buildSummaryCard(
-          'Expiring Items',
-          controller.summary.value.expiringItems.toString(),
-          Icons.timer,
-          Colors.red,
-          () => Get.toNamed('/expiring'),
-        ),
-        _buildSummaryCard(
-          'Total Sales',
-          '\$${controller.summary.value.totalSales.toStringAsFixed(2)}',
-          Icons.attach_money,
-          Colors.green,
-          () => Get.toNamed('/sales'),
-        ),
-        _buildSummaryCard(
-          'Pending Alerts',
-          controller.summary.value.pendingAlerts.toString(),
-          Icons.notifications,
-          Colors.purple,
-          () => Get.toNamed('/alerts'),
-        ),
-      ],
+  Widget _buildSummaryCards(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth < 600 ? 2 : 
+                             constraints.maxWidth < 900 ? 3 : 4;
+        return GridView.count(
+          crossAxisCount: crossAxisCount,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 1.5,
+          children: [
+            _buildSummaryCard(
+              'Total Products',
+              controller.summary.value.totalProducts.toString(),
+              Icons.inventory,
+              Colors.blue,
+              () => Get.toNamed('/inventory'),
+            ),
+            _buildSummaryCard(
+              'Low Stock Items',
+              controller.summary.value.lowStockItems.toString(),
+              Icons.warning,
+              Colors.orange,
+              () => Get.toNamed('/low-stock'),
+            ),
+            _buildSummaryCard(
+              'Expiring Items',
+              controller.summary.value.expiringItems.toString(),
+              Icons.timer,
+              Colors.red,
+              () => Get.toNamed('/expiring'),
+            ),
+            _buildSummaryCard(
+              'Total Sales',
+              '\$${controller.summary.value.totalSales.toStringAsFixed(2)}',
+              Icons.attach_money,
+              Colors.green,
+              () => Get.toNamed('/sales'),
+            ),
+            _buildSummaryCard(
+              'Pending Alerts',
+              controller.summary.value.pendingAlerts.toString(),
+              Icons.notifications,
+              Colors.purple,
+              () => Get.toNamed('/alerts'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -204,15 +211,31 @@ class DashboardView extends GetView<DashboardController> {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             SizedBox(
-              height: 300,
-              child: LineChart(
-                LineChartData(
-                  gridData: const FlGridData(show: false),
+              height: 200,
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  maxY: controller.salesData.map((data) => data.value).reduce((a, b) => a > b ? a : b) * 1.2,
                   titlesData: FlTitlesData(
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, meta) {
+                          return Text('\$${value.toInt()}');
+                        },
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          if (value.toInt() >= controller.salesData.length) return const Text('');
+                          return Text(controller.salesData[value.toInt()].label);
+                        },
+                      ),
                     ),
                     rightTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
@@ -220,45 +243,24 @@ class DashboardView extends GetView<DashboardController> {
                     topTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          if (value.toInt() >= controller.salesData.length) {
-                            return const Text('');
-                          }
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              controller.salesData[value.toInt()].label,
-                              style: Get.textTheme.bodySmall?.copyWith(
-                                color: Get.theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
                   ),
                   borderData: FlBorderData(show: false),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: controller.salesData
-                          .asMap()
-                          .entries
-                          .map((e) => FlSpot(e.key.toDouble(), e.value.value))
-                          .toList(),
-                      isCurved: true,
-                      color: Get.theme.colorScheme.primary,
-                      barWidth: 3,
-                      isStrokeCapRound: true,
-                      dotData: const FlDotData(show: false),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        color: Get.theme.colorScheme.primary.withOpacity(0.1),
-                      ),
-                    ),
-                  ],
+                  gridData: const FlGridData(show: false),
+                  barGroups: controller.salesData.asMap().entries.map((entry) {
+                    return BarChartGroupData(
+                      x: entry.key,
+                      barRods: [
+                        BarChartRodData(
+                          toY: entry.value.value,
+                          color: Get.theme.primaryColor,
+                          width: 20,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(4),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
                 ),
               ),
             ),
@@ -284,8 +286,8 @@ class DashboardView extends GetView<DashboardController> {
                   style: Get.textTheme.titleLarge,
                 ),
                 TextButton.icon(
-                  onPressed: () => Get.toNamed('/alerts'),
-                  icon: const Icon(Icons.arrow_forward),
+                  onPressed: () => Get.toNamed('/notifications'),
+                  icon: const Icon(Icons.notifications),
                   label: const Text('View All'),
                 ),
               ],
@@ -298,14 +300,17 @@ class DashboardView extends GetView<DashboardController> {
               itemBuilder: (context, index) {
                 final alert = controller.recentAlerts[index];
                 return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: alert.color,
-                    child: Icon(alert.icon, color: Colors.white, size: 20),
+                  leading: Icon(
+                    alert.icon,
+                    color: alert.color,
                   ),
                   title: Text(alert.title),
                   subtitle: Text(alert.message),
-                  trailing: Text(controller.getTimeAgo(alert.timestamp)),
-                  onTap: () => Get.toNamed('/alerts'),
+                  trailing: Text(
+                    controller.getTimeAgo(alert.timestamp),
+                    style: Get.textTheme.bodySmall,
+                  ),
+                  onTap: () => Get.toNamed('/notifications'),
                 );
               },
             ),
@@ -313,12 +318,5 @@ class DashboardView extends GetView<DashboardController> {
         ),
       ),
     );
-  }
-
-  int _getGridCrossAxisCount(double width) {
-    if (width > 1200) return 5;
-    if (width > 800) return 3;
-    if (width > 600) return 2;
-    return 1;
   }
 }
