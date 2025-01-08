@@ -32,7 +32,18 @@ class Product {
   });
 
   bool get isLowStock => quantity <= minimumStockLevel;
-  bool get isExpiringSoon => expiryDate.difference(DateTime.now()).inDays <= 30;
+  
+  bool isExpiringSoonAt(DateTime currentTime) {
+    final days = expiryDate.difference(currentTime).inDays;
+    return days >= 0 && days <= 30;  // Not expired but will expire within 30 days
+  }
+
+  bool isExpiredAt(DateTime currentTime) {
+    return expiryDate.isBefore(currentTime);
+  }
+
+  bool get isExpiringSoon => isExpiringSoonAt(DateTime.now());
+  
   double get totalValue => price * quantity;
 
   factory Product.fromJson(Map<String, dynamic> json) {

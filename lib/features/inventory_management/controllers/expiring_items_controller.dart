@@ -24,21 +24,17 @@ class ExpiringItemsController extends GetxController {
 
   // Filtered lists for different expiry states
   List<Product> get expiredItems => allProducts
-      .where((p) => p.expiryDate.isBefore(currentTime))
+      .where((p) => p.isExpiredAt(currentTime))
       .toList();
 
   List<Product> get criticalItems => allProducts
-      .where((p) => 
-        !p.expiryDate.isBefore(currentTime) &&
-        p.expiryDate.difference(currentTime).inDays <= criticalThresholdDays)
+      .where((p) => p.isExpiringSoonAt(currentTime))
       .toList();
 
   List<Product> get warningItems => allProducts
       .where((p) {
-        final daysToExpiry = p.expiryDate.difference(currentTime).inDays;
-        return !p.expiryDate.isBefore(currentTime) &&
-               daysToExpiry > criticalThresholdDays &&
-               daysToExpiry <= warningThresholdDays;
+        final days = p.expiryDate.difference(currentTime).inDays;
+        return days > criticalThresholdDays && days <= warningThresholdDays;
       })
       .toList();
 
@@ -83,15 +79,17 @@ class ExpiringItemsController extends GetxController {
   }
 
   void updatePagination(int? value) {
-    if (value != null) {
+    if (value != null && value > 0) {
       rowsPerPage.value = value;
-      // Reset to first page when changing rows per page
-      currentPage.value = 0;
+      currentPage.value = 0;  // Reset to first page
+      _applyFilters();
     }
   }
 
   void onPageChanged(int page) {
-    currentPage.value = page;
+    if (page >= 0 && page * rowsPerPage.value < filteredProducts.length) {
+      currentPage.value = page;
+    }
   }
 
   List<Product> get paginatedProducts {
@@ -99,8 +97,7 @@ class ExpiringItemsController extends GetxController {
     
     final start = currentPage.value * rowsPerPage.value;
     if (start >= filteredProducts.length) {
-      currentPage.value = (filteredProducts.length / rowsPerPage.value).floor() - 1;
-      return paginatedProducts;
+      return [];
     }
     
     final end = start + rowsPerPage.value;
@@ -117,9 +114,9 @@ class ExpiringItemsController extends GetxController {
 
     // First filter by expiry status (expired, critical, or warning)
     filtered = filtered.where((p) {
-      final daysToExpiry = p.expiryDate.difference(currentTime).inDays;
-      return p.expiryDate.isBefore(currentTime) || // Expired
-             daysToExpiry <= warningThresholdDays; // Within warning threshold
+      if (p.isExpiredAt(currentTime)) return true;
+      final days = p.expiryDate.difference(currentTime).inDays;
+      return days >= 0 && days <= warningThresholdDays;
     }).toList();
 
     // Apply category filter
@@ -143,9 +140,7 @@ class ExpiringItemsController extends GetxController {
 
     filteredProducts.assignAll(filtered);
     // Reset to first page when filters change
-    if (currentPage.value > 0) {
-      currentPage.value = 0;
-    }
+    currentPage.value = 0;
   }
 
   void updateSort(String field) {
