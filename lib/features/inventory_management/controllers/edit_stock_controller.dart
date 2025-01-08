@@ -1,8 +1,10 @@
 import 'package:get/get.dart';
 import '../../../data/services/inventory_service.dart';
+import '../../../data/repositories/reference_data_repository.dart';
 
 class EditStockController extends GetxController {
   final InventoryService _inventoryService;
+  final ReferenceDataRepository _referenceDataRepository;
   final String productId;
 
   // Form fields
@@ -19,48 +21,38 @@ class EditStockController extends GetxController {
   final RxString location = ''.obs;
 
   // Dropdown options
-  final RxList<String> categories = <String>[
-    'Pain Relief',
-    'Antibiotics',
-    'Vitamins',
-    'First Aid',
-    'Digestive Health',
-    'Respiratory',
-    'Skin Care',
-    'Eye Care',
-    'Others'
-  ].obs;
-
-  final RxList<String> units = <String>[
-    'tablets',
-    'capsules',
-    'vials',
-    'bottles',
-    'strips',
-    'boxes',
-    'tubes',
-    'pieces'
-  ].obs;
-
-  final RxList<String> locations = <String>[
-    'Shelf A',
-    'Shelf B',
-    'Shelf C',
-    'Cold Storage',
-    'Secure Cabinet',
-    'Display Counter'
-  ].obs;
+  final RxList<String> categories = <String>[].obs;
+  final RxList<String> units = <String>[].obs;
+  final RxList<String> locations = <String>[].obs;
+  final RxList<String> manufacturers = <String>[].obs;
 
   // Form validation
   final RxBool isValid = false.obs;
   final RxBool isLoading = false.obs;
 
-  EditStockController(this._inventoryService, this.productId);
+  EditStockController(this._inventoryService, this.productId) 
+      : _referenceDataRepository = ReferenceDataRepository();
 
   @override
   void onInit() {
     super.onInit();
+    loadReferenceData();
     loadProduct();
+  }
+
+  Future<void> loadReferenceData() async {
+    try {
+      categories.value = await _referenceDataRepository.getCategories();
+      units.value = await _referenceDataRepository.getUnits();
+      locations.value = await _referenceDataRepository.getLocations();
+      manufacturers.value = await _referenceDataRepository.getManufacturers();
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to load reference data: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   Future<void> loadProduct() async {

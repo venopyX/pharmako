@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/services/inventory_service.dart';
+import '../../../data/repositories/reference_data_repository.dart';
 import '../../../utils/logging/logger.dart';
 import '../models/product_model.dart';
 
 class AddStockController extends GetxController {
   final InventoryService _inventoryService;
+  final ReferenceDataRepository _referenceDataRepository;
   final RxBool isLoading = false.obs;
 
   // Form fields
@@ -26,50 +28,13 @@ class AddStockController extends GetxController {
   final RxMap<String, String> errors = <String, String>{}.obs;
 
   // Predefined lists
-  final RxList<String> categories = <String>[
-    'Pain Relief',
-    'Antibiotics',
-    'Diabetes',
-    'Vitamins',
-    'First Aid',
-    'Chronic Care',
-    'Heart Care',
-    'Respiratory Care',
-    'Others'
-  ].obs;
+  final RxList<String> categories = <String>[].obs;
+  final RxList<String> units = <String>[].obs;
+  final RxList<String> manufacturers = <String>[].obs;
+  final RxList<String> locations = <String>[].obs;
 
-  final RxList<String> units = <String>[
-    'tablets',
-    'capsules',
-    'vials',
-    'bottles',
-    'strips',
-    'boxes',
-    'tubes',
-    'pieces'
-  ].obs;
-
-  final RxList<String> manufacturers = <String>[
-    'PharmaCo',
-    'MediPharma',
-    'DiabeCare',
-    'VitaHealth',
-    'Others'
-  ].obs;
-
-  final RxList<String> locations = <String>[
-    'Shelf A1',
-    'Shelf A2',
-    'Shelf B1',
-    'Shelf B2',
-    'Shelf C1',
-    'Shelf C2',
-    'Refrigerator 1',
-    'Refrigerator 2',
-    'Secure Cabinet'
-  ].obs;
-
-  AddStockController(this._inventoryService);
+  AddStockController(this._inventoryService) 
+      : _referenceDataRepository = ReferenceDataRepository();
 
   @override
   void onInit() {
@@ -90,29 +55,21 @@ class AddStockController extends GetxController {
       location.value = product.location;
       validateForm();
     }
-    loadCategories();
-    loadManufacturers();
+    loadReferenceData();
   }
 
-  Future<void> loadCategories() async {
+  Future<void> loadReferenceData() async {
     try {
-      final loadedCategories = await _inventoryService.getCategories();
-      if (loadedCategories.isNotEmpty) {
-        categories.value = loadedCategories;
-      }
+      categories.value = await _referenceDataRepository.getCategories();
+      units.value = await _referenceDataRepository.getUnits();
+      locations.value = await _referenceDataRepository.getLocations();
+      manufacturers.value = await _referenceDataRepository.getManufacturers();
     } catch (e) {
-      AppLogger.error('Failed to load categories: $e');
-    }
-  }
-
-  Future<void> loadManufacturers() async {
-    try {
-      final loadedManufacturers = await _inventoryService.getManufacturers();
-      if (loadedManufacturers.isNotEmpty) {
-        manufacturers.value = loadedManufacturers;
-      }
-    } catch (e) {
-      AppLogger.error('Failed to load manufacturers: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to load reference data: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
