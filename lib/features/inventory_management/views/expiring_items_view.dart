@@ -165,7 +165,8 @@ class ExpiringItemsView extends GetView<ExpiringItemsController> {
   Widget _buildExpiringTable(BuildContext context) {
     return InventoryDataTable(
       title: 'Expiring Items',
-      products: controller.filteredProducts,
+      products: controller.paginatedProducts,
+      totalRows: controller.totalProducts,
       formatDate: controller.formatDate,
       formatCurrency: controller.formatCurrency,
       onEdit: (id) => Get.toNamed('/edit-stock', arguments: id),

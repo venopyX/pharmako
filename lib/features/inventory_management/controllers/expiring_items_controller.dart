@@ -12,6 +12,7 @@ class ExpiringItemsController extends GetxController {
   final RxString selectedCategory = ''.obs;
   final RxString searchQuery = ''.obs;
   final RxBool isLoading = true.obs;
+  final RxInt currentPage = 0.obs;
   final RxInt rowsPerPage = 10.obs;
 
   // Expiry thresholds
@@ -87,8 +88,23 @@ class ExpiringItemsController extends GetxController {
   void updatePagination(int? value) {
     if (value != null) {
       rowsPerPage.value = value;
+      // Reset to first page when changing rows per page
+      currentPage.value = 0;
     }
   }
+
+  List<Product> get paginatedProducts {
+    if (filteredProducts.isEmpty) return [];
+    final start = currentPage.value * rowsPerPage.value;
+    if (start >= filteredProducts.length) {
+      currentPage.value = (filteredProducts.length - 1) ~/ rowsPerPage.value;
+      return paginatedProducts;
+    }
+    final end = start + rowsPerPage.value;
+    return filteredProducts.sublist(start, end > filteredProducts.length ? filteredProducts.length : end);
+  }
+
+  int get totalProducts => filteredProducts.length;
 
   void _applyFilters() {
     var filtered = List<Product>.from(allProducts);

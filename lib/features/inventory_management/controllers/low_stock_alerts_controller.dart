@@ -13,6 +13,7 @@ class LowStockAlertsController extends GetxController {
   final RxString selectedCategory = ''.obs;
   final RxList<String> categories = <String>[].obs;
   final RxBool isLoading = false.obs;
+  final RxInt currentPage = 0.obs;
   final RxInt rowsPerPage = 10.obs;
   final RxString sortColumn = ''.obs;
   final RxBool sortAscending = true.obs;
@@ -126,11 +127,26 @@ class LowStockAlertsController extends GetxController {
     });
   }
 
-  void updatePagination(int? value) {
-    if (value != null) {
-      rowsPerPage.value = value;
+  void updatePagination(int? perPage) {
+    if (perPage != null) {
+      rowsPerPage.value = perPage;
+      // Reset to first page when changing rows per page
+      currentPage.value = 0;
     }
   }
+
+  List<Product> get paginatedProducts {
+    if (filteredProducts.isEmpty) return [];
+    final start = currentPage.value * rowsPerPage.value;
+    if (start >= filteredProducts.length) {
+      currentPage.value = (filteredProducts.length - 1) ~/ rowsPerPage.value;
+      return paginatedProducts;
+    }
+    final end = start + rowsPerPage.value;
+    return filteredProducts.sublist(start, end > filteredProducts.length ? filteredProducts.length : end);
+  }
+
+  int get totalProducts => filteredProducts.length;
 
   String formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';

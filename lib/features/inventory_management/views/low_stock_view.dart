@@ -165,7 +165,8 @@ class LowStockView extends GetView<LowStockAlertsController> {
   Widget _buildLowStockTable(BuildContext context) {
     return InventoryDataTable(
       title: 'Low Stock Items',
-      products: controller.filteredProducts,
+      products: controller.paginatedProducts,
+      totalRows: controller.totalProducts,
       formatDate: controller.formatDate,
       formatCurrency: controller.formatCurrency,
       onEdit: (id) => Get.toNamed('/edit-stock', arguments: id),
