@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 import '../../../data/services/inventory_service.dart';
 import '../models/product_model.dart';
 import 'package:intl/intl.dart';
@@ -90,22 +91,37 @@ class ExpiringItemsController extends GetxController {
   }
 
   void onPageChanged(int page) {
-    if (page >= 0 && page * rowsPerPage.value < filteredProducts.length) {
-      currentPage.value = page;
+    if (filteredProducts.isEmpty) {
+      currentPage.value = 0;
+      return;
     }
+    
+    final maxPage = ((filteredProducts.length - 1) ~/ rowsPerPage.value).clamp(0, double.infinity.toInt());
+    currentPage.value = page.clamp(0, maxPage);
   }
 
   List<Product> get paginatedProducts {
     if (filteredProducts.isEmpty) return [];
     
     final start = currentPage.value * rowsPerPage.value;
-    // Ensure we don't go out of bounds
+    
+    // Ensure start index is valid
     if (start >= filteredProducts.length) {
-      currentPage.value = (filteredProducts.length - 1) ~/ rowsPerPage.value;
-      return paginatedProducts; // Recursive call with corrected page
+      // Calculate the correct page without recursion
+      currentPage.value = ((filteredProducts.length - 1) ~/ rowsPerPage.value).clamp(0, double.infinity.toInt());
+      final newStart = currentPage.value * rowsPerPage.value;
+      final newEnd = math.min(newStart + rowsPerPage.value, filteredProducts.length);
+      return filteredProducts.sublist(newStart, newEnd);
     }
     
-    final end = (start + rowsPerPage.value).clamp(0, filteredProducts.length);
+    // Calculate end index, ensuring it doesn't exceed list length
+    final end = math.min(start + rowsPerPage.value, filteredProducts.length);
+    
+    // Double check indices are valid before sublist
+    if (start < 0 || start >= filteredProducts.length || end <= start || end > filteredProducts.length) {
+      return [];
+    }
+    
     return filteredProducts.sublist(start, end);
   }
 
