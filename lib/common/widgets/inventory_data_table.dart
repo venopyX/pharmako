@@ -34,6 +34,10 @@ class InventoryDataTable extends StatelessWidget {
           children: [
             PaginatedDataTable(
               header: Text(title),
+              availableRowsPerPage: const [10, 20, 50, 100],
+              rowsPerPage: rowsPerPage,
+              onRowsPerPageChanged: onRowsPerPageChanged,
+              showFirstLastButtons: true,
               columns: [
                 DataColumn(
                   label: const Text('Name'),
@@ -69,8 +73,6 @@ class InventoryDataTable extends StatelessWidget {
                 formatCurrency,
                 onEdit,
               ),
-              rowsPerPage: rowsPerPage,
-              onRowsPerPageChanged: onRowsPerPageChanged,
               showCheckboxColumn: false,
             ),
           ],

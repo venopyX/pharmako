@@ -208,17 +208,27 @@ class ViewStockController extends GetxController {
   }
 
   List<Product> get paginatedProducts {
+    if (filteredProducts.isEmpty) return [];
     final start = currentPage.value * rowsPerPage.value;
+    if (start >= filteredProducts.length) {
+      currentPage.value = (filteredProducts.length - 1) ~/ rowsPerPage.value;
+      return paginatedProducts;
+    }
     final end = start + rowsPerPage.value;
-    if (start >= filteredProducts.length) return [];
     return filteredProducts.sublist(start, end > filteredProducts.length ? filteredProducts.length : end);
   }
 
   int get totalProducts => filteredProducts.length;
 
   void updatePagination(int? page, int? perPage) {
-    if (page != null) currentPage.value = page;
-    if (perPage != null) rowsPerPage.value = perPage;
+    if (perPage != null) {
+      rowsPerPage.value = perPage;
+      // Reset to first page when changing rows per page
+      currentPage.value = 0;
+    }
+    if (page != null) {
+      currentPage.value = page;
+    }
   }
 
   Future<void> editProduct(Product product) async {
