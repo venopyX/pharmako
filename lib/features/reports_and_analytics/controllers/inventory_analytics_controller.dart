@@ -1,9 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../models/inventory_analytics_model.dart';
 import '../../../data/services/analytics_service.dart';
-import '../../../utils/formatters/formatter.dart';
 import '../../../utils/constants/colors.dart';
 
 class InventoryAnalyticsController extends GetxController {
