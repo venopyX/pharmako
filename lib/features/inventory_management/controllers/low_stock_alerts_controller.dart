@@ -133,23 +133,20 @@ class LowStockAlertsController extends GetxController {
       // Reset to first page when changing rows per page
       currentPage.value = 0;
     }
-    applyFilters(); // Refresh the filtered products when page changes
   }
 
   void onPageChanged(int page) {
     currentPage.value = page;
-    applyFilters(); // Refresh the filtered products when page changes
   }
 
   List<Product> get paginatedProducts {
     if (filteredProducts.isEmpty) return [];
     final start = currentPage.value * rowsPerPage.value;
-    if (start >= filteredProducts.length) {
-      currentPage.value = (filteredProducts.length - 1) ~/ rowsPerPage.value;
-      return paginatedProducts;
-    }
     final end = start + rowsPerPage.value;
-    return filteredProducts.sublist(start, end > filteredProducts.length ? filteredProducts.length : end);
+    return filteredProducts.sublist(
+      start.clamp(0, filteredProducts.length), 
+      end.clamp(0, filteredProducts.length)
+    );
   }
 
   int get totalProducts => filteredProducts.length;

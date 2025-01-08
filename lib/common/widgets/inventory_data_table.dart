@@ -37,13 +37,13 @@ class InventoryDataTable extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             PaginatedDataTable(
-              header: Text(title),
-              availableRowsPerPage: const [10, 20, 50, 100],
-              rowsPerPage: rowsPerPage,
-              onRowsPerPageChanged: onRowsPerPageChanged,
               showFirstLastButtons: true,
               showCheckboxColumn: false,
               onPageChanged: onPageChanged,
+              availableRowsPerPage: const [10, 20, 50, 100],
+              rowsPerPage: rowsPerPage,
+              onRowsPerPageChanged: onRowsPerPageChanged,
+              header: Text(title),
               columns: [
                 DataColumn(
                   label: const Text('Name'),
