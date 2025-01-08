@@ -32,13 +32,14 @@ class EditStockController extends GetxController {
   ].obs;
 
   final RxList<String> units = <String>[
-    'Pieces',
-    'Boxes',
-    'Strips',
-    'Bottles',
-    'Tablets',
-    'Capsules',
-    'Vials'
+    'tablets',
+    'capsules',
+    'vials',
+    'bottles',
+    'strips',
+    'boxes',
+    'tubes',
+    'pieces'
   ].obs;
 
   final RxList<String> locations = <String>[
