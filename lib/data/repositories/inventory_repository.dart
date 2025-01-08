@@ -246,8 +246,8 @@ class InventoryRepository {
         id: '9',
         name: 'Loratadine 10mg',
         description: 'Allergy relief',
-        category: 'Allergy'
-                price: 6.99,
+        category: 'Allergy',
+        price: 6.99,
         quantity: 15,
         unit: 'tablets',
         manufacturer: 'AllergyCare',
