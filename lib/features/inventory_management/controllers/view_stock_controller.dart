@@ -241,21 +241,7 @@ class ViewStockController extends GetxController {
 
   List<Product> get paginatedProducts {
     if (filteredProducts.isEmpty) return [];
-    
-    final maxPage = getMaxPage();
-    if (currentPage.value > maxPage) {
-      currentPage.value = maxPage;
-      return [];
-    }
-    
-    final start = currentPage.value * rowsPerPage.value;
-    if (start >= filteredProducts.length) {
-      currentPage.value = maxPage;
-      return paginatedProducts; // Recursive call with corrected page
-    }
-    
-    final end = (start + rowsPerPage.value).clamp(0, filteredProducts.length);
-    return filteredProducts.sublist(start, end);
+    return filteredProducts;
   }
 
   int get totalProducts => filteredProducts.length;

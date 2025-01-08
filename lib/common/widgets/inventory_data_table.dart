@@ -107,45 +107,19 @@ class _InventoryDataSource extends DataTableSource {
   );
 
   @override
-  DataRow? getRow(int index) {
-    if (index >= products.length) return null;
+  DataRow getRow(int index) {
+    if (index >= products.length) {
+      throw IndexError(index, products);
+    }
     final product = products[index];
-    
     return DataRow(
       cells: [
         DataCell(Text(product.name)),
         DataCell(Text(product.category)),
         DataCell(Text(product.manufacturer)),
-        DataCell(
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('${product.quantity} ${product.unit}'),
-              if (product.isLowStock)
-                const Padding(
-                  padding: EdgeInsets.only(left: 8.0),
-                  child: Icon(Icons.warning, color: Colors.orange, size: 16),
-                ),
-            ],
-          ),
-        ),
+        DataCell(Text(product.quantity.toString())),
         DataCell(Text(formatCurrency(product.price))),
-        DataCell(
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(formatDate(product.expiryDate)),
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Icon(
-                  _getExpiryIcon(product.expiryDate),
-                  color: _getExpiryColor(product.expiryDate),
-                  size: 16,
-                ),
-              ),
-            ],
-          ),
-        ),
+        DataCell(Text(formatDate(product.expiryDate))),
         if (onEdit != null)
           DataCell(
             IconButton(
@@ -155,29 +129,6 @@ class _InventoryDataSource extends DataTableSource {
           ),
       ],
     );
-  }
-
-  IconData _getExpiryIcon(DateTime expiryDate) {
-    final days = expiryDate.difference(DateTime.now()).inDays;
-    if (days < 0) {
-      return Icons.error_outline;
-    } else if (days <= 30) {
-      return Icons.warning_rounded;
-    } else {
-      return Icons.watch_later_outlined;
-    }
-  }
-
-  Color _getExpiryColor(DateTime expiryDate) {
-    final days = expiryDate.difference(DateTime.now()).inDays;
-    if (days < 0) {
-      return Colors.red;
-    } else if (days <= 30) {
-      return Colors.orange;
-    } else if (days <= 90) {
-      return Colors.amber;
-    }
-    return Colors.green;
   }
 
   @override
