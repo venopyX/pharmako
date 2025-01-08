@@ -70,7 +70,8 @@ class EditStockController extends GetxController {
         expiryDate.value = product.expiryDate;
         minimumStockLevel.value = product.minimumStockLevel;
         batchNumber.value = product.batchNumber;
-        location.value = product.location;
+        // Convert internal location name to display name
+        location.value = _referenceDataRepository.getLocationDisplayName(product.location) ?? product.location;
         validateForm();
       } else {
         Get.back();
@@ -178,14 +179,7 @@ class EditStockController extends GetxController {
   }
 
   Future<void> saveProduct() async {
-    if (!isValid.value) {
-      Get.snackbar(
-        'Error',
-        'Please fill in all required fields correctly',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
+    if (!isValid.value) return;
 
     isLoading.value = true;
     try {
@@ -200,11 +194,11 @@ class EditStockController extends GetxController {
         'expiryDate': expiryDate.value,
         'minimumStockLevel': minimumStockLevel.value,
         'batchNumber': batchNumber.value,
-        'location': location.value,
+        'location': _referenceDataRepository.getLocationInternalName(location.value) ?? location.value,
       };
 
       await _inventoryService.updateProduct(productId, productData);
-      Get.back(result: true);
+      Get.back();
       Get.snackbar(
         'Success',
         'Product updated successfully',

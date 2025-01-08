@@ -228,7 +228,42 @@ class ReferenceDataRepository {
   }
 
   Future<List<String>> getLocations() async {
-    return _locations.where((l) => l.isActive).map((l) => l.name).toList();
+    return _locations
+        .where((l) => l.isActive)
+        .map((l) => l.description ?? l.name)
+        .toList();
+  }
+
+  // Get internal name from display name
+  String? getLocationInternalName(String displayName) {
+    final location = _locations.firstWhere(
+      (l) => l.description == displayName || l.name == displayName,
+      orElse: () => ReferenceData(
+        id: '0',
+        name: displayName.toLowerCase().replaceAll(' ', '_'),
+        description: displayName,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+    );
+    return location.name;
+  }
+
+  // Get display name from internal name
+  String? getLocationDisplayName(String internalName) {
+    final location = _locations.firstWhere(
+      (l) => l.name == internalName,
+      orElse: () => ReferenceData(
+        id: '0',
+        name: internalName,
+        description: internalName.split('_')
+            .map((word) => word.substring(0, 1).toUpperCase() + word.substring(1))
+            .join(' '),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+    );
+    return location.description ?? location.name;
   }
 
   // Methods to add new items (to be implemented with persistence later)

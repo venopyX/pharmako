@@ -221,7 +221,7 @@ class AddStockController extends GetxController {
         'expiryDate': expiryDate.value,
         'minimumStockLevel': minimumStockLevel.value,
         'batchNumber': batchNumber.value,
-        'location': location.value,
+        'location': _referenceDataRepository.getLocationInternalName(location.value) ?? location.value,
       };
 
       if (product != null) {
