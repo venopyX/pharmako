@@ -103,9 +103,10 @@ class DashboardView extends GetView<DashboardController> {
           crossAxisCount: crossAxisCount,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 1.5,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.8,
+          padding: EdgeInsets.zero,
           children: [
             _buildSummaryCard(
               'Total Products',

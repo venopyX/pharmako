@@ -148,5 +148,6 @@ class LowStockAlertsController extends GetxController {
 
   void refreshData() {
     loadProducts();
+    loadCategories();
   }
 }

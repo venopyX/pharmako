@@ -4,6 +4,7 @@ import '../data/services/inventory_service.dart';
 import '../features/inventory_management/controllers/add_stock_controller.dart';
 import '../features/inventory_management/controllers/edit_stock_controller.dart';
 import '../features/inventory_management/controllers/view_stock_controller.dart';
+import '../features/inventory_management/controllers/low_stock_alerts_controller.dart';
 
 class InventoryBinding extends Bindings {
   @override
@@ -33,6 +34,10 @@ class InventoryBinding extends Bindings {
         Get.arguments as String,
       ),
       fenix: true,
+    );
+
+    Get.lazyPut<LowStockAlertsController>(
+      () => LowStockAlertsController(Get.find<InventoryService>()),
     );
   }
 }
