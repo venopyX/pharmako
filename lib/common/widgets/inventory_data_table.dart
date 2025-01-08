@@ -11,7 +11,6 @@ class InventoryDataTable extends StatelessWidget {
   final Function(String)? onSort;
   final int rowsPerPage;
   final Function(int?)? onRowsPerPageChanged;
-  final List<DataColumn>? additionalColumns;
 
   const InventoryDataTable({
     super.key,
@@ -23,7 +22,6 @@ class InventoryDataTable extends StatelessWidget {
     this.onSort,
     this.rowsPerPage = 10,
     this.onRowsPerPageChanged,
-    this.additionalColumns,
   });
 
   @override
@@ -64,14 +62,12 @@ class InventoryDataTable extends StatelessWidget {
                   onSort: (_, __) => onSort?.call('expiryDate'),
                 ),
                 if (onEdit != null) const DataColumn(label: Text('Actions')),
-                ...?additionalColumns,
               ],
               source: _InventoryDataSource(
                 products,
                 formatDate,
                 formatCurrency,
                 onEdit,
-                additionalColumns?.length ?? 0,
               ),
               rowsPerPage: rowsPerPage,
               onRowsPerPageChanged: onRowsPerPageChanged,
@@ -89,14 +85,12 @@ class _InventoryDataSource extends DataTableSource {
   final String Function(DateTime) formatDate;
   final String Function(double) formatCurrency;
   final Function(String)? onEdit;
-  final int additionalColumnsCount;
 
   _InventoryDataSource(
-    this.products, 
-    this.formatDate, 
-    this.formatCurrency, 
+    this.products,
+    this.formatDate,
+    this.formatCurrency,
     this.onEdit,
-    this.additionalColumnsCount,
   );
 
   @override
@@ -104,69 +98,73 @@ class _InventoryDataSource extends DataTableSource {
     if (index >= products.length) return null;
     final product = products[index];
     
-    final List<DataCell> cells = [
-      DataCell(Text(product.name)),
-      DataCell(Text(product.category)),
-      DataCell(Text(product.manufacturer)),
-      DataCell(
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('${product.quantity} ${product.unit}'),
-            if (product.isLowStock)
-              const Padding(
-                padding: EdgeInsets.only(left: 8.0),
-                child: Icon(Icons.warning, color: Colors.orange, size: 16),
-              ),
-          ],
-        ),
-      ),
-      DataCell(Text(formatCurrency(product.price))),
-      DataCell(
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(formatDate(product.expiryDate)),
-            if (product.isExpiringSoon)
-              const Padding(
-                padding: EdgeInsets.only(left: 8.0),
-                child: Icon(Icons.access_time, color: Colors.red, size: 16),
-              ),
-          ],
-        ),
-      ),
-    ];
-
-    // Add action column if onEdit is provided
-    if (onEdit != null) {
-      cells.add(DataCell(
-        IconButton(
-          icon: const Icon(Icons.edit),
-          onPressed: () => onEdit!(product.id),
-        ),
-      ));
-    }
-
-    // Add cells for additional columns
-    for (int i = 0; i < additionalColumnsCount; i++) {
-      if (product.isLowStock) {
-        cells.add(DataCell(Text(product.minimumStockLevel.toString())));
-        cells.add(DataCell(
+    return DataRow(
+      cells: [
+        DataCell(Text(product.name)),
+        DataCell(Text(product.category)),
+        DataCell(Text(product.manufacturer)),
+        DataCell(
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('${product.quantity} / ${product.minimumStockLevel}'),
-              const Padding(
-                padding: EdgeInsets.only(left: 8.0),
-                child: Icon(Icons.warning, color: Colors.orange, size: 16),
+              Text('${product.quantity} ${product.unit}'),
+              if (product.isLowStock)
+                const Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Icon(Icons.warning, color: Colors.orange, size: 16),
+                ),
+            ],
+          ),
+        ),
+        DataCell(Text(formatCurrency(product.price))),
+        DataCell(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(formatDate(product.expiryDate)),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Icon(
+                  _getExpiryIcon(product.expiryDate),
+                  color: _getExpiryColor(product.expiryDate),
+                  size: 16,
+                ),
               ),
             ],
           ),
-        ));
-      }
-    }
+        ),
+        if (onEdit != null)
+          DataCell(
+            IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () => onEdit!(product.id),
+            ),
+          ),
+      ],
+    );
+  }
 
-    return DataRow(cells: cells);
+  IconData _getExpiryIcon(DateTime expiryDate) {
+    final days = expiryDate.difference(DateTime.now()).inDays;
+    if (days < 0) {
+      return Icons.error_outline;
+    } else if (days <= 30) {
+      return Icons.warning_rounded;
+    } else {
+      return Icons.watch_later_outlined;
+    }
+  }
+
+  Color _getExpiryColor(DateTime expiryDate) {
+    final days = expiryDate.difference(DateTime.now()).inDays;
+    if (days < 0) {
+      return Colors.red;
+    } else if (days <= 30) {
+      return Colors.orange;
+    } else if (days <= 90) {
+      return Colors.amber;
+    }
+    return Colors.green;
   }
 
   @override

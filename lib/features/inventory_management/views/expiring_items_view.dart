@@ -169,15 +169,9 @@ class ExpiringItemsView extends GetView<ExpiringItemsController> {
       formatDate: controller.formatDate,
       formatCurrency: controller.formatCurrency,
       onEdit: (id) => Get.toNamed('/edit-stock', arguments: id),
+      onSort: controller.updateSort,
       rowsPerPage: controller.rowsPerPage.value,
       onRowsPerPageChanged: (value) => controller.updatePagination(value),
-      onSort: controller.updateSort,
-      additionalColumns: [
-        DataColumn(
-          label: const Text('Days to Expiry'),
-          onSort: (_, __) => controller.updateSort('daysToExpiry'),
-        ),
-      ],
     );
   }
 }
