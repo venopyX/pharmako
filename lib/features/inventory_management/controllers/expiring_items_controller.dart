@@ -15,25 +15,28 @@ class ExpiringItemsController extends GetxController {
   final RxInt currentPage = 0.obs;
   final RxInt rowsPerPage = 10.obs;
 
+  // Fixed current time
+  final DateTime currentTime = DateTime(2025, 1, 8);
+
   // Expiry thresholds
   static const int criticalThresholdDays = 30;
   static const int warningThresholdDays = 90;
 
   // Filtered lists for different expiry states
   List<Product> get expiredItems => filteredProducts
-      .where((p) => p.expiryDate.isBefore(DateTime.now()))
+      .where((p) => p.expiryDate.isBefore(currentTime))
       .toList();
 
   List<Product> get criticalItems => filteredProducts
       .where((p) => 
-        !p.expiryDate.isBefore(DateTime.now()) &&
-        p.expiryDate.difference(DateTime.now()).inDays <= criticalThresholdDays)
+        !p.expiryDate.isBefore(currentTime) &&
+        p.expiryDate.difference(currentTime).inDays <= criticalThresholdDays)
       .toList();
 
   List<Product> get warningItems => filteredProducts
       .where((p) {
-        final daysToExpiry = p.expiryDate.difference(DateTime.now()).inDays;
-        return !p.expiryDate.isBefore(DateTime.now()) &&
+        final daysToExpiry = p.expiryDate.difference(currentTime).inDays;
+        return !p.expiryDate.isBefore(currentTime) &&
                daysToExpiry > criticalThresholdDays &&
                daysToExpiry <= warningThresholdDays;
       })
@@ -53,8 +56,8 @@ class ExpiringItemsController extends GetxController {
       final products = await _inventoryService.getProducts();
       // Only keep products that are expired or will expire within warningThresholdDays
       final expiringProducts = products.where((p) {
-        final daysToExpiry = p.expiryDate.difference(DateTime.now()).inDays;
-        return p.expiryDate.isBefore(DateTime.now()) || daysToExpiry <= warningThresholdDays;
+        final daysToExpiry = p.expiryDate.difference(currentTime).inDays;
+        return p.expiryDate.isBefore(currentTime) || daysToExpiry <= warningThresholdDays;
       }).toList();
       
       allProducts.assignAll(expiringProducts);
@@ -98,13 +101,14 @@ class ExpiringItemsController extends GetxController {
   }
 
   List<Product> get paginatedProducts {
-    if (filteredProducts.isEmpty) return [];
     final start = currentPage.value * rowsPerPage.value;
-    final end = start + rowsPerPage.value;
-    return filteredProducts.sublist(
-      start.clamp(0, filteredProducts.length), 
-      end.clamp(0, filteredProducts.length)
-    );
+    if (start >= filteredProducts.length) {
+      currentPage.value = ((filteredProducts.length - 1) / rowsPerPage.value).floor();
+      return paginatedProducts;
+    }
+    
+    final end = (start + rowsPerPage.value).clamp(0, filteredProducts.length);
+    return filteredProducts.sublist(start, end);
   }
 
   int get totalProducts => filteredProducts.length;
@@ -132,6 +136,8 @@ class ExpiringItemsController extends GetxController {
     filtered.sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
 
     filteredProducts.assignAll(filtered);
+    // Reset to first page when filters change
+    currentPage.value = 0;
   }
 
   void updateSort(String field) {
@@ -150,8 +156,8 @@ class ExpiringItemsController extends GetxController {
         break;
       case 'daysToExpiry':
         filteredProducts.sort((a, b) {
-          final aDays = a.expiryDate.difference(DateTime.now()).inDays;
-          final bDays = b.expiryDate.difference(DateTime.now()).inDays;
+          final aDays = a.expiryDate.difference(currentTime).inDays;
+          final bDays = b.expiryDate.difference(currentTime).inDays;
           return aDays.compareTo(bDays);
         });
         break;
@@ -167,7 +173,7 @@ class ExpiringItemsController extends GetxController {
   }
 
   String getDaysToExpiry(DateTime expiryDate) {
-    final days = expiryDate.difference(DateTime.now()).inDays;
+    final days = expiryDate.difference(currentTime).inDays;
     if (days < 0) {
       return 'Expired ${-days} days ago';
     } else if (days == 0) {
@@ -178,7 +184,7 @@ class ExpiringItemsController extends GetxController {
   }
 
   Color getExpiryColor(DateTime expiryDate) {
-    final days = expiryDate.difference(DateTime.now()).inDays;
+    final days = expiryDate.difference(currentTime).inDays;
     if (days < 0) {
       return Colors.red;
     } else if (days <= criticalThresholdDays) {
