@@ -18,6 +18,38 @@ class EditStockController extends GetxController {
   final RxString batchNumber = ''.obs;
   final RxString location = ''.obs;
 
+  // Dropdown options
+  final RxList<String> categories = <String>[
+    'Pain Relief',
+    'Antibiotics',
+    'Vitamins',
+    'First Aid',
+    'Digestive Health',
+    'Respiratory',
+    'Skin Care',
+    'Eye Care',
+    'Others'
+  ].obs;
+
+  final RxList<String> units = <String>[
+    'Pieces',
+    'Boxes',
+    'Strips',
+    'Bottles',
+    'Tablets',
+    'Capsules',
+    'Vials'
+  ].obs;
+
+  final RxList<String> locations = <String>[
+    'Shelf A',
+    'Shelf B',
+    'Shelf C',
+    'Cold Storage',
+    'Secure Cabinet',
+    'Display Counter'
+  ].obs;
+
   // Form validation
   final RxBool isValid = false.obs;
   final RxBool isLoading = false.obs;
@@ -132,9 +164,11 @@ class EditStockController extends GetxController {
     validateForm();
   }
 
-  void updateLocation(String value) {
-    location.value = value;
-    validateForm();
+  void updateLocation(String? value) {
+    if (value != null) {
+      location.value = value;
+      validateForm();
+    }
   }
 
   void validateForm() {

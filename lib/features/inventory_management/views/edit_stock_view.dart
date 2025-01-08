@@ -46,7 +46,7 @@ class EditStockView extends GetView<EditStockController> {
               _buildDropdownField(
                 label: 'Category',
                 value: controller.category.value,
-                items: ['Pain Relief', 'Antibiotics', 'Vitamins', 'First Aid', 'Digestive Health', 'Respiratory', 'Skin Care', 'Eye Care', 'Others'],
+                items: controller.categories,
                 onChanged: controller.updateCategory,
                 required: true,
               ),
@@ -79,7 +79,7 @@ class EditStockView extends GetView<EditStockController> {
               _buildDropdownField(
                 label: 'Unit',
                 value: controller.unit.value,
-                items: const ['Pieces', 'Boxes', 'Strips', 'Bottles'],
+                items: controller.units,
                 onChanged: controller.updateUnit,
                 required: true,
               ),
@@ -113,9 +113,10 @@ class EditStockView extends GetView<EditStockController> {
                 required: true,
               ),
               const SizedBox(height: 16),
-              _buildTextField(
+              _buildDropdownField(
                 label: 'Location',
                 value: controller.location.value,
+                items: controller.locations,
                 onChanged: controller.updateLocation,
                 required: true,
               ),
