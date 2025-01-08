@@ -99,27 +99,77 @@ class AlertRepository extends GetxController {
   }
 
   void _addTestNotifications() {
+    // Add existing test notifications
     addNotification(
-      'Low Stock Alert',
-      'Paracetamol stock is running low (10 units remaining)',
-      NotificationType.lowStock,
-      NotificationPriority.high,
-      metadata: {'productId': '123', 'currentStock': 10},
-    );
-
-    addNotification(
-      'Expiring Stock',
-      'Amoxicillin batch #456 will expire in 30 days',
-      NotificationType.expiringStock,
-      NotificationPriority.medium,
-      metadata: {'productId': '456', 'expiryDate': DateTime.now().add(const Duration(days: 30)).toIso8601String()},
-    );
-
-    addNotification(
-      'System Update',
-      'New version available: v2.0.1',
-      NotificationType.systemUpdate,
+      'Welcome to Pharmako',
+      'Thank you for using Pharmako Pharmacy Management System',
+      NotificationType.info,
       NotificationPriority.low,
     );
+
+    // Add low stock test notifications
+    _addLowStockTestNotifications();
+  }
+
+  void _addLowStockTestNotifications() {
+    final lowStockItems = [
+      {
+        'name': 'Paracetamol 500mg',
+        'currentStock': 20,
+        'threshold': 100,
+        'category': 'Pain Relief',
+        'supplier': 'PharmaCo Ltd',
+      },
+      {
+        'name': 'Amoxicillin 250mg',
+        'currentStock': 15,
+        'threshold': 50,
+        'category': 'Antibiotics',
+        'supplier': 'MediSupply Inc',
+      },
+      {
+        'name': 'Insulin Regular',
+        'currentStock': 5,
+        'threshold': 30,
+        'category': 'Diabetes',
+        'supplier': 'BioMed Solutions',
+      },
+    ];
+
+    for (final item in lowStockItems) {
+      final stockLevel = (item['currentStock'] as int) / (item['threshold'] as int) * 100;
+      final isVeryLow = stockLevel <= 25;
+
+      addNotification(
+        'Low Stock Alert: ${item['name']}',
+        'Current stock: ${item['currentStock']} units (${stockLevel.toStringAsFixed(0)}% of threshold)',
+        NotificationType.warning,
+        isVeryLow ? NotificationPriority.high : NotificationPriority.medium,
+        metadata: {
+          'type': 'low_stock',
+          'productName': item['name'],
+          'currentStock': item['currentStock'],
+          'threshold': item['threshold'],
+          'category': item['category'],
+          'supplier': item['supplier'],
+          'stockLevel': stockLevel,
+        },
+      );
+    }
+  }
+
+  // Low stock specific methods
+  Future<List<Notification>> getLowStockAlerts() async {
+    return _notifications
+        .where((n) => n.metadata?['type'] == 'low_stock')
+        .toList();
+  }
+
+  Future<List<Notification>> getCriticalStockAlerts() async {
+    return _notifications
+        .where((n) => 
+          n.metadata?['type'] == 'low_stock' && 
+          (n.metadata?['stockLevel'] as double) <= 25.0)
+        .toList();
   }
 }

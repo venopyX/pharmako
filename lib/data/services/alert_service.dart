@@ -56,16 +56,38 @@ class AlertService {
     return _repository.getNotificationsByPriority(priority);
   }
 
-  // Convenience methods for common notifications
-  Future<void> addLowStockAlert(String productName, int currentStock, String productId) async {
+  // Low stock specific methods
+  Future<List<Notification>> getLowStockAlerts() async {
+    return await _repository.getLowStockAlerts();
+  }
+
+  Future<List<Notification>> getCriticalStockAlerts() async {
+    return await _repository.getCriticalStockAlerts();
+  }
+
+  Future<void> addLowStockAlert({
+    required String productName,
+    required int currentStock,
+    required int threshold,
+    required String category,
+    required String supplier,
+  }) async {
+    final stockLevel = (currentStock / threshold) * 100;
+    final isVeryLow = stockLevel <= 25;
+
     await addNotification(
-      'Low Stock Alert',
-      '$productName stock is running low ($currentStock units remaining)',
-      NotificationType.lowStock,
-      NotificationPriority.high,
+      'Low Stock Alert: $productName',
+      'Current stock: $currentStock units (${stockLevel.toStringAsFixed(0)}% of threshold)',
+      NotificationType.warning,
+      isVeryLow ? NotificationPriority.high : NotificationPriority.medium,
       metadata: {
-        'productId': productId,
+        'type': 'low_stock',
+        'productName': productName,
         'currentStock': currentStock,
+        'threshold': threshold,
+        'category': category,
+        'supplier': supplier,
+        'stockLevel': stockLevel,
       },
     );
   }

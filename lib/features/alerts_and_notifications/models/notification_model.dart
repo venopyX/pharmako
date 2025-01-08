@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 
 enum NotificationType {
+  info,
+  warning,
   lowStock,
   expiringStock,
   outOfStock,
@@ -64,6 +66,10 @@ class Notification {
         return Colors.amber.shade700;
       case NotificationType.custom:
         return Colors.grey;
+      case NotificationType.info:
+        return Colors.blue;
+      case NotificationType.warning:
+        return Colors.amber;
     }
   }
 
@@ -89,6 +95,10 @@ class Notification {
         return Icons.payment;
       case NotificationType.custom:
         return Icons.notifications;
+      case NotificationType.info:
+        return Icons.info;
+      case NotificationType.warning:
+        return Icons.warning;
     }
   }
 

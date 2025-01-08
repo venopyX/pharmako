@@ -106,9 +106,29 @@ class NotificationController extends GetxController {
     isLoading.value = false;
   }
 
-  // Convenience methods for adding common notifications
-  Future<void> addLowStockAlert(String productName, int currentStock, String productId) async {
-    await _alertService.addLowStockAlert(productName, currentStock, productId);
+  // Low stock specific methods
+  Future<List<Notification>> getLowStockAlerts() async {
+    return _alertService.getLowStockAlerts();
+  }
+
+  Future<List<Notification>> getCriticalStockAlerts() async {
+    return _alertService.getCriticalStockAlerts();
+  }
+
+  Future<void> addLowStockAlert({
+    required String productName,
+    required int currentStock,
+    required int threshold,
+    required String category,
+    required String supplier,
+  }) async {
+    await _alertService.addLowStockAlert(
+      productName: productName,
+      currentStock: currentStock,
+      threshold: threshold,
+      category: category,
+      supplier: supplier,
+    );
   }
 
   Future<void> addExpiryAlert(String productName, DateTime expiryDate, String productId, String batchNumber) async {
