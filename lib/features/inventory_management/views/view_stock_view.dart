@@ -189,6 +189,7 @@ class ViewStockView extends GetView<ViewStockController> {
       onSort: controller.updateSort,
       rowsPerPage: controller.rowsPerPage.value,
       onRowsPerPageChanged: (value) => controller.updatePagination(null, value),
+      onPageChanged: (page) => controller.updatePagination(page, null),
     ));
   }
 }

@@ -91,6 +91,12 @@ class ExpiringItemsController extends GetxController {
       // Reset to first page when changing rows per page
       currentPage.value = 0;
     }
+    _applyFilters(); // Refresh the filtered products when page changes
+  }
+
+  void onPageChanged(int page) {
+    currentPage.value = page;
+    _applyFilters(); // Refresh the filtered products when page changes
   }
 
   List<Product> get paginatedProducts {

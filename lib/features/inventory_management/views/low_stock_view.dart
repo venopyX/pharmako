@@ -173,6 +173,7 @@ class LowStockView extends GetView<LowStockAlertsController> {
       rowsPerPage: controller.rowsPerPage.value,
       onRowsPerPageChanged: (value) => controller.updatePagination(value),
       onSort: controller.updateSort,
+      onPageChanged: controller.onPageChanged,
     );
   }
 }

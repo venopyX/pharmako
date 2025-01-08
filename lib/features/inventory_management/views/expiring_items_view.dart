@@ -173,6 +173,7 @@ class ExpiringItemsView extends GetView<ExpiringItemsController> {
       onSort: controller.updateSort,
       rowsPerPage: controller.rowsPerPage.value,
       onRowsPerPageChanged: (value) => controller.updatePagination(value),
+      onPageChanged: controller.onPageChanged,
     );
   }
 }

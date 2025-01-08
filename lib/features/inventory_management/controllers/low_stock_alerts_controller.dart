@@ -133,6 +133,12 @@ class LowStockAlertsController extends GetxController {
       // Reset to first page when changing rows per page
       currentPage.value = 0;
     }
+    applyFilters(); // Refresh the filtered products when page changes
+  }
+
+  void onPageChanged(int page) {
+    currentPage.value = page;
+    applyFilters(); // Refresh the filtered products when page changes
   }
 
   List<Product> get paginatedProducts {

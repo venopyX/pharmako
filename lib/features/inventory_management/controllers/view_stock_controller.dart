@@ -229,6 +229,7 @@ class ViewStockController extends GetxController {
     if (page != null) {
       currentPage.value = page;
     }
+    applyFilters(); // Refresh the filtered products when page changes
   }
 
   Future<void> editProduct(Product product) async {
