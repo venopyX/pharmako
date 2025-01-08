@@ -24,11 +24,14 @@ class ExpiringItemsController extends GetxController {
 
   // Filtered lists for different expiry states
   List<Product> get expiredItems => allProducts
-      .where((p) => p.isExpiredAt(currentTime))
+      .where((p) => p.expiryDate.isBefore(currentTime))
       .toList();
 
   List<Product> get criticalItems => allProducts
-      .where((p) => p.isExpiringSoonAt(currentTime))
+      .where((p) {
+        final days = p.expiryDate.difference(currentTime).inDays;
+        return days >= 0 && days <= criticalThresholdDays;
+      })
       .toList();
 
   List<Product> get warningItems => allProducts
@@ -96,14 +99,13 @@ class ExpiringItemsController extends GetxController {
     if (filteredProducts.isEmpty) return [];
     
     final start = currentPage.value * rowsPerPage.value;
+    // Ensure we don't go out of bounds
     if (start >= filteredProducts.length) {
-      return [];
+      currentPage.value = (filteredProducts.length - 1) ~/ rowsPerPage.value;
+      return paginatedProducts; // Recursive call with corrected page
     }
     
-    final end = start + rowsPerPage.value;
-    if (end > filteredProducts.length) {
-      return filteredProducts.sublist(start);
-    }
+    final end = (start + rowsPerPage.value).clamp(0, filteredProducts.length);
     return filteredProducts.sublist(start, end);
   }
 
@@ -114,9 +116,9 @@ class ExpiringItemsController extends GetxController {
 
     // First filter by expiry status (expired, critical, or warning)
     filtered = filtered.where((p) {
-      if (p.isExpiredAt(currentTime)) return true;
       final days = p.expiryDate.difference(currentTime).inDays;
-      return days >= 0 && days <= warningThresholdDays;
+      if (p.expiryDate.isBefore(currentTime)) return true; // Expired
+      return days >= 0 && days <= warningThresholdDays; // Critical or Warning
     }).toList();
 
     // Apply category filter
@@ -136,11 +138,23 @@ class ExpiringItemsController extends GetxController {
     }
 
     // Sort by expiry date by default (closest to expiry first)
-    filtered.sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
+    filtered.sort((a, b) {
+      // Put expired items first
+      if (a.expiryDate.isBefore(currentTime) && !b.expiryDate.isBefore(currentTime)) return -1;
+      if (!a.expiryDate.isBefore(currentTime) && b.expiryDate.isBefore(currentTime)) return 1;
+      // Then sort by days until expiry
+      return a.expiryDate.compareTo(b.expiryDate);
+    });
 
     filteredProducts.assignAll(filtered);
-    // Reset to first page when filters change
-    currentPage.value = 0;
+    
+    // Ensure current page is valid
+    if (filtered.isEmpty) {
+      currentPage.value = 0;
+    } else {
+      final maxPage = (filtered.length - 1) ~/ rowsPerPage.value;
+      currentPage.value = currentPage.value.clamp(0, maxPage);
+    }
   }
 
   void updateSort(String field) {
