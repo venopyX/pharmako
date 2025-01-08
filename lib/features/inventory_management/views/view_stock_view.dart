@@ -182,6 +182,7 @@ class ViewStockView extends GetView<ViewStockController> {
     return Obx(() => InventoryDataTable(
       title: 'Total Products: ${controller.totalProducts}',
       products: controller.paginatedProducts,
+      totalRows: controller.totalProducts,
       formatDate: controller.formatDate,
       formatCurrency: controller.formatCurrency,
       onEdit: (id) => Get.toNamed('/edit-stock', arguments: id),

@@ -11,6 +11,7 @@ class InventoryDataTable extends StatelessWidget {
   final Function(String)? onSort;
   final int rowsPerPage;
   final Function(int?)? onRowsPerPageChanged;
+  final int totalRows;
 
   const InventoryDataTable({
     super.key,
@@ -18,6 +19,7 @@ class InventoryDataTable extends StatelessWidget {
     required this.products,
     required this.formatDate,
     required this.formatCurrency,
+    required this.totalRows,
     this.onEdit,
     this.onSort,
     this.rowsPerPage = 10,
@@ -38,6 +40,7 @@ class InventoryDataTable extends StatelessWidget {
               rowsPerPage: rowsPerPage,
               onRowsPerPageChanged: onRowsPerPageChanged,
               showFirstLastButtons: true,
+              showCheckboxColumn: false,
               columns: [
                 DataColumn(
                   label: const Text('Name'),
@@ -72,8 +75,8 @@ class InventoryDataTable extends StatelessWidget {
                 formatDate,
                 formatCurrency,
                 onEdit,
+                totalRows,
               ),
-              showCheckboxColumn: false,
             ),
           ],
         ),
@@ -87,12 +90,14 @@ class _InventoryDataSource extends DataTableSource {
   final String Function(DateTime) formatDate;
   final String Function(double) formatCurrency;
   final Function(String)? onEdit;
+  final int totalRows;
 
   _InventoryDataSource(
     this.products,
     this.formatDate,
     this.formatCurrency,
     this.onEdit,
+    this.totalRows,
   );
 
   @override
@@ -173,7 +178,7 @@ class _InventoryDataSource extends DataTableSource {
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => products.length;
+  int get rowCount => totalRows;
 
   @override
   int get selectedRowCount => 0;
