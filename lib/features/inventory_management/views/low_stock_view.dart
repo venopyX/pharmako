@@ -163,25 +163,15 @@ class LowStockView extends GetView<LowStockAlertsController> {
   }
 
   Widget _buildLowStockTable(BuildContext context) {
-    return Obx(() => InventoryDataTable(
+    return InventoryDataTable(
       title: 'Low Stock Items',
       products: controller.filteredProducts,
       formatDate: controller.formatDate,
       formatCurrency: controller.formatCurrency,
-      onEdit: (id) => Get.toNamed('/edit-stock/$id'),
+      onEdit: (id) => Get.toNamed('/edit-stock', arguments: id),
       rowsPerPage: controller.rowsPerPage.value,
       onRowsPerPageChanged: (value) => controller.updatePagination(value),
-      additionalColumns: [
-        DataColumn(
-          label: const Text('Min. Level'),
-          numeric: true,
-          onSort: (_, __) => controller.updateSort('minimumStockLevel'),
-        ),
-        DataColumn(
-          label: const Text('Stock Level'),
-          onSort: (_, __) => controller.updateSort('stockLevel'),
-        ),
-      ],
-    ));
+      onSort: controller.updateSort,
+    );
   }
 }

@@ -46,7 +46,7 @@ class EditStockView extends GetView<EditStockController> {
               _buildDropdownField(
                 label: 'Category',
                 value: controller.category.value,
-                items: const ['Tablets', 'Syrups', 'Injections', 'Others'],
+                items: ['Pain Relief', 'Antibiotics', 'Vitamins', 'First Aid', 'Digestive Health', 'Respiratory', 'Skin Care', 'Eye Care', 'Others'],
                 onChanged: controller.updateCategory,
                 required: true,
               ),
