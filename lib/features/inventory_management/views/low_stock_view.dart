@@ -174,6 +174,14 @@ class LowStockView extends GetView<LowStockAlertsController> {
       onRowsPerPageChanged: (value) => controller.updatePagination(value),
       onSort: controller.updateSort,
       onPageChanged: controller.onPageChanged,
+      currentPage: controller.currentPage.value,
+      isLowStock: (product) => product.quantity <= product.minimumStockLevel,
+      isExpiringSoon: (product) {
+        final now = DateTime(2025, 1, 8);
+        final thirtyDaysFromNow = now.add(const Duration(days: 30));
+        return product.expiryDate.isBefore(thirtyDaysFromNow) && product.expiryDate.isAfter(now);
+      },
+      isExpired: (product) => product.expiryDate.isBefore(DateTime(2025, 1, 8)),
     );
   }
 }
