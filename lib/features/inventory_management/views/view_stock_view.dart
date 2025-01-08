@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../utils/constants/sizes.dart';
 import '../controllers/view_stock_controller.dart';
-import '../models/product_model.dart';
+import '../../../common/widgets/inventory_data_table.dart';
 
 class ViewStockView extends GetView<ViewStockController> {
   const ViewStockView({super.key});
@@ -179,121 +179,15 @@ class ViewStockView extends GetView<ViewStockController> {
   }
 
   Widget _buildStockTable(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.padding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Obx(() => PaginatedDataTable(
-              header: Text('Total Products: ${controller.totalProducts}'),
-              columns: [
-                DataColumn(
-                  label: const Text('Name'),
-                  onSort: (_, __) => controller.updateSort('name'),
-                ),
-                DataColumn(
-                  label: const Text('Category'),
-                  onSort: (_, __) => controller.updateSort('category'),
-                ),
-                DataColumn(
-                  label: const Text('Manufacturer'),
-                  onSort: (_, __) => controller.updateSort('manufacturer'),
-                ),
-                DataColumn(
-                  label: const Text('Quantity'),
-                  numeric: true,
-                  onSort: (_, __) => controller.updateSort('quantity'),
-                ),
-                DataColumn(
-                  label: const Text('Price'),
-                  numeric: true,
-                  onSort: (_, __) => controller.updateSort('price'),
-                ),
-                DataColumn(
-                  label: const Text('Expiry Date'),
-                  onSort: (_, __) => controller.updateSort('expiryDate'),
-                ),
-                const DataColumn(label: Text('Actions')),
-              ],
-              source: _StockDataSource(
-                controller.paginatedProducts,
-                controller.formatDate,
-                controller.formatCurrency,
-                (id) => Get.toNamed('/edit-stock', arguments: id),
-              ),
-              rowsPerPage: controller.rowsPerPage.value,
-              onRowsPerPageChanged: (value) => controller.updatePagination(null, value),
-              showCheckboxColumn: false,
-            )),
-          ],
-        ),
-      ),
-    );
+    return Obx(() => InventoryDataTable(
+      title: 'Total Products: ${controller.totalProducts}',
+      products: controller.paginatedProducts,
+      formatDate: controller.formatDate,
+      formatCurrency: controller.formatCurrency,
+      onEdit: (id) => Get.toNamed('/edit-stock', arguments: id),
+      onSort: controller.updateSort,
+      rowsPerPage: controller.rowsPerPage.value,
+      onRowsPerPageChanged: (value) => controller.updatePagination(null, value),
+    ));
   }
-}
-
-class _StockDataSource extends DataTableSource {
-  final List<Product> products;
-  final String Function(DateTime) formatDate;
-  final String Function(double) formatCurrency;
-  final Function(String) onEdit;
-
-  _StockDataSource(this.products, this.formatDate, this.formatCurrency, this.onEdit);
-
-  @override
-  DataRow? getRow(int index) {
-    if (index >= products.length) return null;
-    final product = products[index];
-    
-    return DataRow(
-      cells: [
-        DataCell(Text(product.name)),
-        DataCell(Text(product.category)),
-        DataCell(Text(product.manufacturer)),
-        DataCell(
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('${product.quantity} ${product.unit}'),
-              if (product.isLowStock)
-                const Padding(
-                  padding: EdgeInsets.only(left: 8.0),
-                  child: Icon(Icons.warning, color: Colors.orange, size: 16),
-                ),
-            ],
-          ),
-        ),
-        DataCell(Text(formatCurrency(product.price))),
-        DataCell(
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(formatDate(product.expiryDate)),
-              if (product.isExpiringSoon)
-                const Padding(
-                  padding: EdgeInsets.only(left: 8.0),
-                  child: Icon(Icons.access_time, color: Colors.red, size: 16),
-                ),
-            ],
-          ),
-        ),
-        DataCell(
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () => onEdit(product.id),
-          ),
-        ),
-      ],
-    );
-  }
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get rowCount => products.length;
-
-  @override
-  int get selectedRowCount => 0;
 }
