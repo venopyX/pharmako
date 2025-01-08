@@ -23,17 +23,17 @@ class ExpiringItemsController extends GetxController {
   static const int warningThresholdDays = 90;
 
   // Filtered lists for different expiry states
-  List<Product> get expiredItems => filteredProducts
+  List<Product> get expiredItems => allProducts
       .where((p) => p.expiryDate.isBefore(currentTime))
       .toList();
 
-  List<Product> get criticalItems => filteredProducts
+  List<Product> get criticalItems => allProducts
       .where((p) => 
         !p.expiryDate.isBefore(currentTime) &&
         p.expiryDate.difference(currentTime).inDays <= criticalThresholdDays)
       .toList();
 
-  List<Product> get warningItems => filteredProducts
+  List<Product> get warningItems => allProducts
       .where((p) {
         final daysToExpiry = p.expiryDate.difference(currentTime).inDays;
         return !p.expiryDate.isBefore(currentTime) &&
@@ -54,14 +54,8 @@ class ExpiringItemsController extends GetxController {
     isLoading.value = true;
     try {
       final products = await _inventoryService.getProducts();
-      // Only keep products that are expired or will expire within warningThresholdDays
-      final expiringProducts = products.where((p) {
-        final daysToExpiry = p.expiryDate.difference(currentTime).inDays;
-        return p.expiryDate.isBefore(currentTime) || daysToExpiry <= warningThresholdDays;
-      }).toList();
-      
-      allProducts.assignAll(expiringProducts);
-      categories.assignAll(expiringProducts.map((p) => p.category).toSet().toList()..sort());
+      allProducts.assignAll(products);
+      categories.assignAll(products.map((p) => p.category).toSet().toList()..sort());
       _applyFilters();
     } catch (e) {
       Get.snackbar(
@@ -101,13 +95,18 @@ class ExpiringItemsController extends GetxController {
   }
 
   List<Product> get paginatedProducts {
+    if (filteredProducts.isEmpty) return [];
+    
     final start = currentPage.value * rowsPerPage.value;
     if (start >= filteredProducts.length) {
-      currentPage.value = ((filteredProducts.length - 1) / rowsPerPage.value).floor();
+      currentPage.value = (filteredProducts.length / rowsPerPage.value).floor() - 1;
       return paginatedProducts;
     }
     
-    final end = (start + rowsPerPage.value).clamp(0, filteredProducts.length);
+    final end = start + rowsPerPage.value;
+    if (end > filteredProducts.length) {
+      return filteredProducts.sublist(start);
+    }
     return filteredProducts.sublist(start, end);
   }
 
@@ -115,6 +114,13 @@ class ExpiringItemsController extends GetxController {
 
   void _applyFilters() {
     var filtered = List<Product>.from(allProducts);
+
+    // First filter by expiry status (expired, critical, or warning)
+    filtered = filtered.where((p) {
+      final daysToExpiry = p.expiryDate.difference(currentTime).inDays;
+      return p.expiryDate.isBefore(currentTime) || // Expired
+             daysToExpiry <= warningThresholdDays; // Within warning threshold
+    }).toList();
 
     // Apply category filter
     if (selectedCategory.isNotEmpty) {
@@ -137,31 +143,37 @@ class ExpiringItemsController extends GetxController {
 
     filteredProducts.assignAll(filtered);
     // Reset to first page when filters change
-    currentPage.value = 0;
+    if (currentPage.value > 0) {
+      currentPage.value = 0;
+    }
   }
 
   void updateSort(String field) {
+    var sorted = List<Product>.from(filteredProducts);
+    
     switch (field) {
       case 'name':
-        filteredProducts.sort((a, b) => a.name.compareTo(b.name));
+        sorted.sort((a, b) => a.name.compareTo(b.name));
         break;
       case 'category':
-        filteredProducts.sort((a, b) => a.category.compareTo(b.category));
+        sorted.sort((a, b) => a.category.compareTo(b.category));
         break;
       case 'manufacturer':
-        filteredProducts.sort((a, b) => a.manufacturer.compareTo(b.manufacturer));
+        sorted.sort((a, b) => a.manufacturer.compareTo(b.manufacturer));
         break;
       case 'expiryDate':
-        filteredProducts.sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
+        sorted.sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
         break;
       case 'daysToExpiry':
-        filteredProducts.sort((a, b) {
+        sorted.sort((a, b) {
           final aDays = a.expiryDate.difference(currentTime).inDays;
           final bDays = b.expiryDate.difference(currentTime).inDays;
           return aDays.compareTo(bDays);
         });
         break;
     }
+    
+    filteredProducts.assignAll(sorted);
   }
 
   String formatDate(DateTime date) {
