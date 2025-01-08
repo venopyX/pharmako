@@ -13,6 +13,7 @@ class InventoryDataTable extends StatelessWidget {
   final Function(int?)? onRowsPerPageChanged;
   final int totalRows;
   final Function(int)? onPageChanged;
+  final int currentPage;
 
   const InventoryDataTable({
     super.key,
@@ -26,6 +27,7 @@ class InventoryDataTable extends StatelessWidget {
     this.rowsPerPage = 10,
     this.onRowsPerPageChanged,
     this.onPageChanged,
+    this.currentPage = 0,
   });
 
   @override
@@ -43,6 +45,7 @@ class InventoryDataTable extends StatelessWidget {
               availableRowsPerPage: const [10, 20, 50, 100],
               rowsPerPage: rowsPerPage,
               onRowsPerPageChanged: onRowsPerPageChanged,
+              initialFirstRowIndex: currentPage * rowsPerPage,
               header: Text(title),
               columns: [
                 DataColumn(
