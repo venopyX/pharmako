@@ -71,6 +71,7 @@ class InventoryDataTable extends StatelessWidget {
                 formatDate,
                 formatCurrency,
                 onEdit,
+                additionalColumns?.length ?? 0,
               ),
               rowsPerPage: rowsPerPage,
               onRowsPerPageChanged: onRowsPerPageChanged,
@@ -88,55 +89,84 @@ class _InventoryDataSource extends DataTableSource {
   final String Function(DateTime) formatDate;
   final String Function(double) formatCurrency;
   final Function(String)? onEdit;
+  final int additionalColumnsCount;
 
-  _InventoryDataSource(this.products, this.formatDate, this.formatCurrency, this.onEdit);
+  _InventoryDataSource(
+    this.products, 
+    this.formatDate, 
+    this.formatCurrency, 
+    this.onEdit,
+    this.additionalColumnsCount,
+  );
 
   @override
   DataRow? getRow(int index) {
     if (index >= products.length) return null;
     final product = products[index];
     
-    return DataRow(
-      cells: [
-        DataCell(Text(product.name)),
-        DataCell(Text(product.category)),
-        DataCell(Text(product.manufacturer)),
-        DataCell(
+    final List<DataCell> cells = [
+      DataCell(Text(product.name)),
+      DataCell(Text(product.category)),
+      DataCell(Text(product.manufacturer)),
+      DataCell(
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('${product.quantity} ${product.unit}'),
+            if (product.isLowStock)
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(Icons.warning, color: Colors.orange, size: 16),
+              ),
+          ],
+        ),
+      ),
+      DataCell(Text(formatCurrency(product.price))),
+      DataCell(
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(formatDate(product.expiryDate)),
+            if (product.isExpiringSoon)
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(Icons.access_time, color: Colors.red, size: 16),
+              ),
+          ],
+        ),
+      ),
+    ];
+
+    // Add action column if onEdit is provided
+    if (onEdit != null) {
+      cells.add(DataCell(
+        IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: () => onEdit!(product.id),
+        ),
+      ));
+    }
+
+    // Add cells for additional columns
+    for (int i = 0; i < additionalColumnsCount; i++) {
+      if (product.isLowStock) {
+        cells.add(DataCell(Text(product.minimumStockLevel.toString())));
+        cells.add(DataCell(
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('${product.quantity} ${product.unit}'),
-              if (product.isLowStock)
-                const Padding(
-                  padding: EdgeInsets.only(left: 8.0),
-                  child: Icon(Icons.warning, color: Colors.orange, size: 16),
-                ),
+              Text('${product.quantity} / ${product.minimumStockLevel}'),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(Icons.warning, color: Colors.orange, size: 16),
+              ),
             ],
           ),
-        ),
-        DataCell(Text(formatCurrency(product.price))),
-        DataCell(
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(formatDate(product.expiryDate)),
-              if (product.isExpiringSoon)
-                const Padding(
-                  padding: EdgeInsets.only(left: 8.0),
-                  child: Icon(Icons.access_time, color: Colors.red, size: 16),
-                ),
-            ],
-          ),
-        ),
-        if (onEdit != null)
-          DataCell(
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => onEdit!(product.id),
-            ),
-          ),
-      ],
-    );
+        ));
+      }
+    }
+
+    return DataRow(cells: cells);
   }
 
   @override

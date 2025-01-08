@@ -105,7 +105,7 @@ class DashboardView extends GetView<DashboardController> {
           physics: const NeverScrollableScrollPhysics(),
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 1.8,
+          childAspectRatio: constraints.maxWidth < 600 ? 1.3 : 1.5,
           padding: EdgeInsets.zero,
           children: [
             _buildSummaryCard(
@@ -162,11 +162,12 @@ class DashboardView extends GetView<DashboardController> {
       child: Card(
         elevation: 2,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 32, color: color),
+              Icon(icon, size: 28, color: color),
               const SizedBox(height: 8),
               Text(
                 title,
@@ -176,12 +177,15 @@ class DashboardView extends GetView<DashboardController> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
-              Text(
-                value,
-                style: Get.textTheme.headlineMedium?.copyWith(
-                  color: Get.theme.colorScheme.onSurface,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: Get.textTheme.titleLarge?.copyWith(
+                    color: Get.theme.colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
             ],
           ),
