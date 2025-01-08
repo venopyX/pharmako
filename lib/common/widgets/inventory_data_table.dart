@@ -14,6 +14,9 @@ class InventoryDataTable extends StatelessWidget {
   final int totalRows;
   final Function(int)? onPageChanged;
   final int currentPage;
+  final bool Function(Product) isLowStock;
+  final bool Function(Product) isExpiringSoon;
+  final bool Function(Product) isExpired;
 
   const InventoryDataTable({
     super.key,
@@ -22,6 +25,9 @@ class InventoryDataTable extends StatelessWidget {
     required this.formatDate,
     required this.formatCurrency,
     required this.totalRows,
+    required this.isLowStock,
+    required this.isExpiringSoon,
+    required this.isExpired,
     this.onEdit,
     this.onSort,
     this.rowsPerPage = 10,
@@ -82,6 +88,9 @@ class InventoryDataTable extends StatelessWidget {
                 formatCurrency,
                 onEdit,
                 totalRows,
+                isLowStock,
+                isExpiringSoon,
+                isExpired,
               ),
             ),
           ],
@@ -97,6 +106,9 @@ class _InventoryDataSource extends DataTableSource {
   final String Function(double) formatCurrency;
   final Function(String)? onEdit;
   final int totalRows;
+  final bool Function(Product) isLowStock;
+  final bool Function(Product) isExpiringSoon;
+  final bool Function(Product) isExpired;
 
   _InventoryDataSource(
     this.products,
@@ -104,6 +116,9 @@ class _InventoryDataSource extends DataTableSource {
     this.formatCurrency,
     this.onEdit,
     this.totalRows,
+    this.isLowStock,
+    this.isExpiringSoon,
+    this.isExpired,
   );
 
   @override
@@ -117,9 +132,37 @@ class _InventoryDataSource extends DataTableSource {
         DataCell(Text(product.name)),
         DataCell(Text(product.category)),
         DataCell(Text(product.manufacturer)),
-        DataCell(Text(product.quantity.toString())),
+        DataCell(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(product.quantity.toString()),
+              if (isLowStock(product))
+                const Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Icon(Icons.warning, color: Colors.orange, size: 16),
+                ),
+            ],
+          ),
+        ),
         DataCell(Text(formatCurrency(product.price))),
-        DataCell(Text(formatDate(product.expiryDate))),
+        DataCell(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(formatDate(product.expiryDate)),
+              if (isExpired(product) || isExpiringSoon(product))
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    isExpired(product) ? Icons.error_outline : Icons.warning_amber_rounded,
+                    color: isExpired(product) ? Colors.red : Colors.orange,
+                    size: 16,
+                  ),
+                ),
+            ],
+          ),
+        ),
         if (onEdit != null)
           DataCell(
             IconButton(

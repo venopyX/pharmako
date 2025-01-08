@@ -179,23 +179,21 @@ class ViewStockView extends GetView<ViewStockController> {
   }
 
   Widget _buildStockTable(BuildContext context) {
-    return Obx(() {
-      final products = controller.paginatedProducts;
-      final total = controller.totalProducts;
-      
-      return InventoryDataTable(
-        title: 'Total Products: $total',
-        products: products,
-        totalRows: total,
-        formatDate: controller.formatDate,
-        formatCurrency: controller.formatCurrency,
-        onEdit: (id) => Get.toNamed('/edit-stock', arguments: id),
-        onSort: controller.updateSort,
-        rowsPerPage: controller.rowsPerPage.value,
-        onRowsPerPageChanged: (value) => controller.updatePagination(null, value),
-        onPageChanged: (page) => controller.updatePagination(page, null),
-        currentPage: controller.currentPage.value,
-      );
-    });
+    return InventoryDataTable(
+      title: 'Stock Items (${controller.totalProducts})',
+      products: controller.paginatedProducts,
+      formatDate: controller.formatDate,
+      formatCurrency: controller.formatCurrency,
+      onEdit: (id) => Get.toNamed('/edit-stock/$id'),
+      onSort: controller.updateSort,
+      rowsPerPage: controller.rowsPerPage.value,
+      onRowsPerPageChanged: (value) => controller.updatePagination(null, value),
+      totalRows: controller.totalProducts,
+      onPageChanged: (page) => controller.updatePagination(page, null),
+      currentPage: controller.currentPage.value,
+      isLowStock: controller.isLowStock,
+      isExpiringSoon: controller.isExpiringSoon,
+      isExpired: controller.isExpired,
+    );
   }
 }

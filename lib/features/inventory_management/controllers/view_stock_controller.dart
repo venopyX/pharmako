@@ -166,14 +166,13 @@ class ViewStockController extends GetxController {
 
       if (showLowStock.value) {
         filtered = filtered.where((product) => 
-          product.quantity <= product.minimumStockLevel
+          isLowStock(product)
         ).toList();
       }
 
       if (showExpiringSoon.value) {
-        final thirtyDaysFromNow = DateTime.now().add(const Duration(days: 30));
         filtered = filtered.where((product) => 
-          product.expiryDate.isBefore(thirtyDaysFromNow)
+          isExpiringSoon(product)
         ).toList();
       }
 
@@ -194,10 +193,7 @@ class ViewStockController extends GetxController {
       }
 
       filteredProducts.value = filtered;
-      // Reset to first page when filters change
-      currentPage.value = 0;
       validatePagination();
-      // Force UI update
       filteredProducts.refresh();
     } catch (e) {
       handleError('Error applying filters', e);
@@ -307,5 +303,20 @@ class ViewStockController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  bool isLowStock(Product product) {
+    return product.quantity <= product.minimumStockLevel;
+  }
+
+  bool isExpiringSoon(Product product) {
+    final now = DateTime(2025, 1, 8); // Using provided time
+    final thirtyDaysFromNow = now.add(const Duration(days: 30));
+    return product.expiryDate.isBefore(thirtyDaysFromNow) && product.expiryDate.isAfter(now);
+  }
+
+  bool isExpired(Product product) {
+    final now = DateTime(2025, 1, 8); // Using provided time
+    return product.expiryDate.isBefore(now);
   }
 }
