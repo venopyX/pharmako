@@ -3,6 +3,7 @@ import '../bindings/dashboard_binding.dart';
 import '../bindings/inventory_binding.dart';
 import '../bindings/notification_binding.dart';
 import '../bindings/expiring_items_binding.dart';
+import '../bindings/sales_binding.dart';
 import '../features/home_dashboard/views/dashboard_view.dart';
 import '../features/inventory_management/views/add_stock_view.dart';
 import '../features/inventory_management/views/edit_stock_view.dart';
@@ -10,11 +11,15 @@ import '../features/inventory_management/views/view_stock_view.dart';
 import '../features/inventory_management/views/low_stock_view.dart';
 import '../features/inventory_management/views/expiring_items_view.dart';
 import '../features/alerts_and_notifications/views/notification_view.dart';
+import '../features/sales_management/views/sales_view.dart';
 
 class AppRoutes {
+  static const String home = '/';
+  static const String sales = '/sales';
+
   static final routes = [
     GetPage(
-      name: '/',
+      name: home,
       page: () => const DashboardView(),
       binding: DashboardBinding(),
     ),
@@ -47,6 +52,11 @@ class AppRoutes {
       name: '/notifications',
       page: () => const NotificationView(),
       binding: NotificationBinding(),
+    ),
+    GetPage(
+      name: sales,
+      page: () => const SalesView(),
+      binding: SalesBinding(),
     ),
   ];
 }
