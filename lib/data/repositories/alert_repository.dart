@@ -99,7 +99,7 @@ class AlertRepository extends GetxController {
   }
 
   void _addTestNotifications() {
-    // Add existing test notifications
+    // System notifications
     addNotification(
       'Welcome to Pharmako',
       'Thank you for using Pharmako Pharmacy Management System',
@@ -107,8 +107,47 @@ class AlertRepository extends GetxController {
       NotificationPriority.low,
     );
 
-    // Add low stock test notifications
+    addNotification(
+      'System Update Available',
+      'A new version (2.1.0) is available with improved inventory management',
+      NotificationType.systemUpdate,
+      NotificationPriority.medium,
+      metadata: {
+        'version': '2.1.0',
+        'releaseNotes': 'https://example.com/release-notes',
+      },
+    );
+
+    // Security and backup notifications
+    addNotification(
+      'Security Alert',
+      'Multiple failed login attempts detected from IP 192.168.1.100',
+      NotificationType.securityAlert,
+      NotificationPriority.critical,
+      metadata: {
+        'ip': '192.168.1.100',
+        'attempts': 5,
+        'timestamp': DateTime.now().subtract(const Duration(minutes: 30)).toIso8601String(),
+      },
+    );
+
+    addNotification(
+      'Backup Required',
+      'Last backup was performed 7 days ago. Please backup your data.',
+      NotificationType.backupRequired,
+      NotificationPriority.high,
+      metadata: {
+        'lastBackup': DateTime.now().subtract(const Duration(days: 7)).toIso8601String(),
+      },
+    );
+
+    // Inventory notifications
     _addLowStockTestNotifications();
+    _addExpiryTestNotifications();
+    _addPriceChangeTestNotifications();
+
+    // Order notifications
+    _addOrderTestNotifications();
   }
 
   void _addLowStockTestNotifications() {
@@ -153,6 +192,113 @@ class AlertRepository extends GetxController {
           'category': item['category'],
           'supplier': item['supplier'],
           'stockLevel': stockLevel,
+        },
+      );
+    }
+  }
+
+  void _addExpiryTestNotifications() {
+    final expiryItems = [
+      {
+        'name': 'Amoxicillin 500mg',
+        'expiryDate': DateTime.now().add(const Duration(days: 30)),
+        'batchNumber': 'BAT2024001',
+        'productId': 'AMX500',
+      },
+      {
+        'name': 'Ibuprofen 400mg',
+        'expiryDate': DateTime.now().add(const Duration(days: 60)),
+        'batchNumber': 'BAT2024002',
+        'productId': 'IBU400',
+      },
+      {
+        'name': 'Cetirizine 10mg',
+        'expiryDate': DateTime.now().add(const Duration(days: 90)),
+        'batchNumber': 'BAT2024003',
+        'productId': 'CET10',
+      },
+    ];
+
+    for (final item in expiryItems) {
+      addNotification(
+        'Expiring Stock Alert',
+        '${item['name']} (Batch #${item['batchNumber']}) will expire on ${(item['expiryDate'] as DateTime).toString().split(' ')[0]}',
+        NotificationType.expiringStock,
+        NotificationPriority.high,
+        metadata: {
+          'productId': item['productId'],
+          'batchNumber': item['batchNumber'],
+          'expiryDate': (item['expiryDate'] as DateTime).toIso8601String(),
+        },
+      );
+    }
+  }
+
+  void _addPriceChangeTestNotifications() {
+    final priceChanges = [
+      {
+        'name': 'Aspirin 100mg',
+        'oldPrice': 9.99,
+        'newPrice': 12.99,
+        'productId': 'ASP100',
+      },
+      {
+        'name': 'Vitamin C 1000mg',
+        'oldPrice': 15.99,
+        'newPrice': 13.99,
+        'productId': 'VITC1000',
+      },
+    ];
+
+    for (final item in priceChanges) {
+      final percentageChange = (((item['newPrice'] as double) - (item['oldPrice'] as double)) / (item['oldPrice'] as double) * 100).toStringAsFixed(1);
+      final increase = (item['newPrice'] as double) > (item['oldPrice'] as double);
+
+      addNotification(
+        'Price Change Alert',
+        '${item['name']} price has ${increase ? 'increased' : 'decreased'} by $percentageChange%',
+        NotificationType.priceChange,
+        NotificationPriority.medium,
+        metadata: {
+          'productId': item['productId'],
+          'oldPrice': item['oldPrice'],
+          'newPrice': item['newPrice'],
+          'percentageChange': percentageChange,
+        },
+      );
+    }
+  }
+
+  void _addOrderTestNotifications() {
+    final orders = [
+      {
+        'orderId': 'ORD2024001',
+        'customerName': 'John Doe',
+        'items': 3,
+        'total': 89.97,
+        'status': 'pending',
+      },
+      {
+        'orderId': 'ORD2024002',
+        'customerName': 'Jane Smith',
+        'items': 5,
+        'total': 156.45,
+        'status': 'processing',
+      },
+    ];
+
+    for (final order in orders) {
+      addNotification(
+        'New Order: #${order['orderId']}',
+        'Order received from ${order['customerName']} for ${order['items']} items (Total: \$${(order['total'] as double).toStringAsFixed(2)})',
+        NotificationType.newOrder,
+        NotificationPriority.high,
+        metadata: {
+          'orderId': order['orderId'],
+          'customerName': order['customerName'],
+          'items': order['items'],
+          'total': order['total'],
+          'status': order['status'],
         },
       );
     }

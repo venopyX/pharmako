@@ -204,53 +204,95 @@ class _NotificationCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        notification.title,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight:
-                              notification.isRead ? FontWeight.normal : FontWeight.bold,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            notification.title,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight:
+                                  notification.isRead ? FontWeight.normal : FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            timeago.format(notification.timestamp),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.outline,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: notification.priorityColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        notification.priorityText,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: notification.priorityColor,
+                    if (!notification.isRead)
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: theme.colorScheme.primary,
                         ),
                       ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(
                   notification.message,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: notification.isRead
-                        ? theme.textTheme.bodyMedium?.color
-                        : theme.colorScheme.onSurface,
-                  ),
+                  style: theme.textTheme.bodyMedium,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  timeago.format(notification.timestamp),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.outline,
-                  ),
-                ),
+                if (notification.metadata != null && notification.metadata!.isNotEmpty)
+                  _buildMetadataWidget(notification.metadata!, theme),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildMetadataWidget(Map<String, dynamic> metadata, ThemeData theme) {
+    // Filter out metadata that should be displayed
+    final displayableMetadata = Map<String, dynamic>.from(metadata)
+      ..removeWhere((key, value) =>
+          key == 'type' ||
+          value == null ||
+          value.toString().isEmpty ||
+          value.toString().startsWith('http'));
+
+    if (displayableMetadata.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        children: displayableMetadata.entries.map((entry) {
+          return Chip(
+            backgroundColor: theme.colorScheme.surfaceVariant,
+            label: Text(
+              '${entry.key.split('_').map((word) => word[0].toUpperCase() + word.substring(1)).join(' ')}: ${_formatMetadataValue(entry.value)}',
+              style: theme.textTheme.bodySmall,
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  String _formatMetadataValue(dynamic value) {
+    if (value is DateTime || (value is String && value.contains('T'))) {
+      try {
+        final date = value is DateTime ? value : DateTime.parse(value as String);
+        return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      } catch (_) {
+        return value.toString();
+      }
+    }
+
+    if (value is double) {
+      return value.toStringAsFixed(2);
+    }
+
+    return value.toString();
   }
 }
