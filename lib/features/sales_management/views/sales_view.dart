@@ -19,162 +19,233 @@ class SalesView extends GetView<SalesController> {
           ),
         ],
       ),
-      body: Row(
-        children: [
-          // Products List Section (Left side)
-          Expanded(
-            flex: 2,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Search products...',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (value) => controller.searchQuery.value = value,
-                  ),
-                ),
-                Expanded(
-                  child: Obx(() => GridView.builder(
-                    padding: const EdgeInsets.all(8.0),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 1.5,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                    ),
-                    itemCount: controller.filteredProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = controller.filteredProducts[index];
-                      return _ProductCard(
-                        product: product,
-                        onAddToCart: (quantity) => 
-                          controller.addToCart(product, quantity),
-                      );
-                    },
-                  )),
-                ),
-              ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 600) {
+            return _buildMobileLayout();
+          } else {
+            return _buildDesktopLayout();
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout() {
+    return Column(
+      children: [
+        // Search Bar
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            decoration: const InputDecoration(
+              hintText: 'Search products...',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(),
             ),
+            onChanged: (value) => controller.searchQuery.value = value,
           ),
-          // Cart Section (Right side)
-          Container(
-            width: 300,
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                  color: Colors.grey[300]!,
-                  width: 1,
-                ),
-              ),
-            ),
+        ),
+        // Products and Cart in TabBarView
+        Expanded(
+          child: DefaultTabController(
+            length: 2,
             child: Column(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  color: Colors.blue,
-                  child: Row(
-                    children: [
-                      const Icon(Icons.shopping_cart, color: Colors.white),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Cart',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.white),
-                        onPressed: controller.clearCart,
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Obx(() => ListView.builder(
-                    itemCount: controller.cartItems.length,
-                    itemBuilder: (context, index) {
-                      final item = controller.cartItems[index];
-                      return _CartItem(
-                        item: item,
-                        onUpdateQuantity: (quantity) =>
-                          controller.updateCartItemQuantity(item, quantity),
-                        onRemove: () => controller.removeFromCart(item),
-                      );
-                    },
-                  )),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    border: Border(
-                      top: BorderSide(color: Colors.grey[300]!),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                const TabBar(
+                  tabs: [
+                    Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            'Total:',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Obx(() => Text(
-                            '\$${controller.totalAmount.value.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
-                          )),
+                          Icon(Icons.inventory_2),
+                          SizedBox(width: 8),
+                          Text('Products'),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          onPressed: () async {
-                            if (await controller.completeSale()) {
-                              Get.snackbar(
-                                'Success',
-                                'Sale completed successfully',
-                                backgroundColor: Colors.green,
-                                colorText: Colors.white,
-                              );
-                            } else {
-                              Get.snackbar(
-                                'Error',
-                                'Failed to complete sale',
-                                backgroundColor: Colors.red,
-                                colorText: Colors.white,
-                              );
-                            }
-                          },
-                          child: const Text('Complete Sale'),
-                        ),
+                    ),
+                    Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.shopping_cart),
+                          SizedBox(width: 8),
+                          Text('Cart'),
+                        ],
                       ),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      _buildProductsGrid(),
+                      _buildCartSection(),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout() {
+    return Row(
+      children: [
+        // Products List Section (Left side)
+        Expanded(
+          flex: 2,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  decoration: const InputDecoration(
+                    hintText: 'Search products...',
+                    prefixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) => controller.searchQuery.value = value,
+                ),
+              ),
+              Expanded(child: _buildProductsGrid()),
+            ],
+          ),
+        ),
+        // Cart Section (Right side)
+        SizedBox(
+          width: 300,
+          child: _buildCartSection(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProductsGrid() {
+    return Obx(() => GridView.builder(
+      padding: const EdgeInsets.all(8.0),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.5,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
       ),
+      itemCount: controller.filteredProducts.length,
+      itemBuilder: (context, index) {
+        final product = controller.filteredProducts[index];
+        return _ProductCard(
+          product: product,
+          onAddToCart: (quantity) => 
+            controller.addToCart(product, quantity),
+        );
+      },
+    ));
+  }
+
+  Widget _buildCartSection() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          color: Colors.blue,
+          child: Row(
+            children: [
+              const Icon(Icons.shopping_cart, color: Colors.white),
+              const SizedBox(width: 8),
+              const Text(
+                'Cart',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.white),
+                onPressed: controller.clearCart,
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Obx(() => ListView.builder(
+            itemCount: controller.cartItems.length,
+            itemBuilder: (context, index) {
+              final item = controller.cartItems[index];
+              return _CartItem(
+                item: item,
+                onUpdateQuantity: (quantity) =>
+                  controller.updateCartItemQuantity(item, quantity),
+                onRemove: () => controller.removeFromCart(item),
+              );
+            },
+          )),
+        ),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            border: Border(
+              top: BorderSide(color: Colors.grey[300]!),
+            ),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Total:',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Obx(() => Text(
+                    '\$${controller.totalAmount.value.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  )),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  onPressed: () async {
+                    if (await controller.completeSale()) {
+                      Get.snackbar(
+                        'Success',
+                        'Sale completed successfully',
+                        backgroundColor: Colors.green,
+                        colorText: Colors.white,
+                      );
+                    } else {
+                      Get.snackbar(
+                        'Error',
+                        'Failed to complete sale',
+                        backgroundColor: Colors.red,
+                        colorText: Colors.white,
+                      );
+                    }
+                  },
+                  child: const Text('Complete Sale'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

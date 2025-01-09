@@ -16,6 +16,7 @@ import '../features/sales_management/views/sales_view.dart';
 class AppRoutes {
   static const String home = '/';
   static const String sales = '/sales';
+  static const String sale = '/sale';  // Alias for sales for better semantics
 
   static final routes = [
     GetPage(
@@ -56,6 +57,11 @@ class AppRoutes {
     GetPage(
       name: sales,
       page: () => const SalesView(),
+      binding: SalesBinding(),
+    ),
+    GetPage(
+      name: sale,
+      page: () => const SalesView(),  // Same view, different route
       binding: SalesBinding(),
     ),
   ];
