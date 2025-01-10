@@ -1,9 +1,8 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
+import 'package:intl/intl.dart';
 import '../../../data/services/inventory_service.dart';
 import '../models/product_model.dart';
-import 'package:intl/intl.dart';
 
 class ExpiringItemsController extends GetxController {
   final InventoryService _inventoryService;
@@ -15,9 +14,8 @@ class ExpiringItemsController extends GetxController {
   final RxBool isLoading = true.obs;
   final RxInt currentPage = 0.obs;
   final RxInt rowsPerPage = 10.obs;
-
-  // Current time from system
-  final DateTime currentTime = DateTime.now();
+  final RxString sortColumn = ''.obs;
+  final RxBool sortAscending = true.obs;
 
   ExpiringItemsController(this._inventoryService);
 
@@ -44,6 +42,10 @@ class ExpiringItemsController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> refreshData() async {
+    await loadData();
   }
 
   void searchProducts(String query) {
@@ -75,13 +77,49 @@ class ExpiringItemsController extends GetxController {
       ).toList();
     }
 
-    // Filter by expiry status
-    filtered = filtered.where((p) => 
-      p.isExpiringSoonAt(currentTime) || p.isExpiredAt(currentTime)
-    ).toList();
+    // Filter by expiry status (only show items expiring within 90 days or already expired)
+    filtered = filtered.where((p) {
+      final now = DateTime.now();
+      return p.isExpiringSoonAt(now) || p.isExpiredAt(now);
+    }).toList();
+
+    // Apply sorting
+    if (sortColumn.value.isNotEmpty) {
+      filtered.sort((a, b) {
+        var comparison = 0;
+        switch (sortColumn.value) {
+          case 'name':
+            comparison = a.name.compareTo(b.name);
+            break;
+          case 'category':
+            comparison = a.category.compareTo(b.category);
+            break;
+          case 'expiryDate':
+            comparison = a.expiryDate.compareTo(b.expiryDate);
+            break;
+          case 'daysToExpiry':
+            final now = DateTime.now();
+            final aDays = a.expiryDate.difference(now).inDays;
+            final bDays = b.expiryDate.difference(now).inDays;
+            comparison = aDays.compareTo(bDays);
+            break;
+        }
+        return sortAscending.value ? comparison : -comparison;
+      });
+    }
 
     filteredProducts.value = filtered;
     currentPage.value = 0; // Reset to first page when filters change
+  }
+
+  void updateSort(String column) {
+    if (sortColumn.value == column) {
+      sortAscending.value = !sortAscending.value;
+    } else {
+      sortColumn.value = column;
+      sortAscending.value = true;
+    }
+    _applyFilters();
   }
 
   List<Product> get paginatedProducts {
@@ -92,16 +130,22 @@ class ExpiringItemsController extends GetxController {
 
   int get totalProducts => filteredProducts.length;
 
-  List<Product> get expiredItems => 
-    allProducts.where((p) => p.isExpiredAt(currentTime)).toList();
+  List<Product> get expiredItems {
+    final now = DateTime.now();
+    return allProducts.where((p) => p.isExpiredAt(now)).toList();
+  }
 
-  List<Product> get criticalItems =>
-    allProducts.where((p) => p.isCriticalExpiryAt(currentTime)).toList();
+  List<Product> get criticalItems {
+    final now = DateTime.now();
+    return allProducts.where((p) => p.isCriticalExpiryAt(now)).toList();
+  }
 
-  List<Product> get warningItems =>
-    allProducts.where((p) => 
-      p.isExpiringSoonAt(currentTime) && !p.isCriticalExpiryAt(currentTime)
+  List<Product> get warningItems {
+    final now = DateTime.now();
+    return allProducts.where((p) => 
+      p.isExpiringSoonAt(now) && !p.isCriticalExpiryAt(now)
     ).toList();
+  }
 
   void updatePagination(int? perPage) {
     if (perPage != null && perPage > 0) {
@@ -115,21 +159,50 @@ class ExpiringItemsController extends GetxController {
   }
 
   String formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    return DateFormat('MMM dd, yyyy').format(date);
+  }
+
+  String formatCurrency(double amount) {
+    return NumberFormat.currency(symbol: '\$').format(amount);
   }
 
   int getDaysToExpiry(DateTime expiryDate) {
-    return expiryDate.difference(currentTime).inDays;
+    return expiryDate.difference(DateTime.now()).inDays;
   }
 
   String getExpiryStatus(Product product) {
-    if (product.isExpiredAt(currentTime)) {
+    final now = DateTime.now();
+    if (product.isExpiredAt(now)) {
       return 'Expired';
-    } else if (product.isCriticalExpiryAt(currentTime)) {
+    } else if (product.isCriticalExpiryAt(now)) {
       return 'Critical';
-    } else if (product.isExpiringSoonAt(currentTime)) {
+    } else if (product.isExpiringSoonAt(now)) {
       return 'Warning';
     }
     return 'Good';
+  }
+
+  Color getExpiryStatusColor(Product product) {
+    final now = DateTime.now();
+    if (product.isExpiredAt(now)) {
+      return Colors.red;
+    } else if (product.isCriticalExpiryAt(now)) {
+      return Colors.orange;
+    } else if (product.isExpiringSoonAt(now)) {
+      return Colors.amber;
+    }
+    return Colors.green;
+  }
+
+  IconData getExpiryStatusIcon(Product product) {
+    final now = DateTime.now();
+    if (product.isExpiredAt(now)) {
+      return Icons.error;
+    } else if (product.isCriticalExpiryAt(now)) {
+      return Icons.warning;
+    } else if (product.isExpiringSoonAt(now)) {
+      return Icons.info;
+    }
+    return Icons.check_circle;
   }
 }

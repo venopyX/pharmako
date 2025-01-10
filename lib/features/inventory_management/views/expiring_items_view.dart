@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../utils/constants/sizes.dart';
-import '../../../common/widgets/inventory_data_table.dart';
 import '../controllers/expiring_items_controller.dart';
 
 class ExpiringItemsView extends GetView<ExpiringItemsController> {
@@ -14,12 +12,8 @@ class ExpiringItemsView extends GetView<ExpiringItemsController> {
         title: const Text('Expiring Items'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => Get.toNamed('/add-stock'),
-          ),
-          IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: controller.refreshData,
+            onPressed: () => controller.refreshData(),
           ),
         ],
       ),
@@ -27,97 +21,84 @@ class ExpiringItemsView extends GetView<ExpiringItemsController> {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
-        
-        return SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSizes.padding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildFilters(context),
-                const SizedBox(height: AppSizes.padding),
-                _buildSummaryCards(),
-                const SizedBox(height: AppSizes.padding),
-                _buildExpiringTable(context),
-              ],
+
+        return Column(
+          children: [
+            _buildFilters(context),
+            _buildSummaryCards(),
+            Expanded(
+              child: _buildExpiringTable(context),
             ),
-          ),
+          ],
         );
       }),
     );
   }
 
   Widget _buildFilters(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.padding),
-        child: Wrap(
-          spacing: AppSizes.padding,
-          runSpacing: AppSizes.padding,
-          alignment: WrapAlignment.start,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            SizedBox(
-              width: 300,
-              child: TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Search Products',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: controller.searchProducts,
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              decoration: const InputDecoration(
+                labelText: 'Search',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
               ),
+              onChanged: controller.searchProducts,
             ),
-            SizedBox(
-              width: 200,
-              child: Obx(() => DropdownButtonFormField<String>(
-                value: controller.selectedCategory.value.isEmpty ? null : controller.selectedCategory.value,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                  border: OutlineInputBorder(),
-                ),
-                items: [
-                  const DropdownMenuItem(value: '', child: Text('All Categories')),
-                  ...controller.categories.map((category) {
-                    return DropdownMenuItem(
+          ),
+          const SizedBox(width: 16),
+          Obx(() => DropdownButton<String>(
+            value: controller.selectedCategory.value,
+            items: controller.categories
+                .map((category) => DropdownMenuItem(
                       value: category,
                       child: Text(category),
-                    );
-                  }),
-                ],
-                onChanged: controller.updateCategory,
-              )),
-            ),
-          ],
-        ),
+                    ))
+                .toList(),
+            onChanged: controller.updateCategory,
+          )),
+        ],
       ),
     );
   }
 
   Widget _buildSummaryCards() {
-    return Wrap(
-      spacing: AppSizes.padding,
-      runSpacing: AppSizes.padding,
-      children: [
-        _buildSummaryCard(
-          'Expired Items',
-          controller.expiredItems.length.toString(),
-          Colors.red,
-          Icons.error_outline,
-        ),
-        _buildSummaryCard(
-          'Critical (≤30 days)',
-          controller.criticalItems.length.toString(),
-          Colors.orange,
-          Icons.warning_rounded,
-        ),
-        _buildSummaryCard(
-          'Warning (≤90 days)',
-          controller.warningItems.length.toString(),
-          Colors.amber,
-          Icons.watch_later_outlined,
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildSummaryCard(
+              'Expired',
+              controller.expiredItems.length.toString(),
+              Colors.red,
+              Icons.error,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _buildSummaryCard(
+              'Critical',
+              controller.criticalItems.length.toString(),
+              Colors.orange,
+              Icons.warning,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _buildSummaryCard(
+              'Warning',
+              controller.warningItems.length.toString(),
+              Colors.amber,
+              Icons.info,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -128,32 +109,26 @@ class ExpiringItemsView extends GetView<ExpiringItemsController> {
     IconData icon,
   ) {
     return Card(
-      child: Container(
-        width: 200,
-        padding: const EdgeInsets.all(AppSizes.padding),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 24),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
+            Icon(icon, color: color, size: 32),
             const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 4),
             Text(
               value,
               style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
                 color: color,
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
               ),
             ),
           ],
@@ -163,25 +138,104 @@ class ExpiringItemsView extends GetView<ExpiringItemsController> {
   }
 
   Widget _buildExpiringTable(BuildContext context) {
-    return InventoryDataTable(
-      title: 'Expiring Items',
-      products: controller.paginatedProducts,
-      totalRows: controller.totalProducts,
-      formatDate: controller.formatDate,
-      formatCurrency: controller.formatCurrency,
-      onEdit: (id) => Get.toNamed('/edit-stock', arguments: id),
-      onSort: controller.updateSort,
-      rowsPerPage: controller.rowsPerPage.value,
-      onRowsPerPageChanged: (value) => controller.updatePagination(value),
-      onPageChanged: controller.onPageChanged,
-      currentPage: controller.currentPage.value,
-      isLowStock: (product) => product.quantity <= product.minimumStockLevel,
-      isExpiringSoon: (product) {
-        final now = DateTime(2025, 1, 8);
-        final thirtyDaysFromNow = now.add(const Duration(days: 30));
-        return product.expiryDate.isBefore(thirtyDaysFromNow) && product.expiryDate.isAfter(now);
-      },
-      isExpired: (product) => product.expiryDate.isBefore(DateTime(2025, 1, 8)),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: PaginatedDataTable(
+          header: const Text('Expiring Items'),
+          rowsPerPage: controller.rowsPerPage.value,
+          availableRowsPerPage: const [10, 25, 50],
+          onRowsPerPageChanged: controller.updatePagination,
+          columns: [
+            DataColumn(
+              label: const Text('Status'),
+              onSort: (_, __) => controller.updateSort('status'),
+            ),
+            DataColumn(
+              label: const Text('Name'),
+              onSort: (_, __) => controller.updateSort('name'),
+            ),
+            DataColumn(
+              label: const Text('Category'),
+              onSort: (_, __) => controller.updateSort('category'),
+            ),
+            DataColumn(
+              label: const Text('Expiry Date'),
+              onSort: (_, __) => controller.updateSort('expiryDate'),
+            ),
+            DataColumn(
+              label: const Text('Days to Expiry'),
+              onSort: (_, __) => controller.updateSort('daysToExpiry'),
+            ),
+            const DataColumn(label: Text('Price')),
+            const DataColumn(label: Text('Actions')),
+          ],
+          source: _ExpiringItemsDataSource(
+            controller.paginatedProducts,
+            controller,
+            onEdit: (id) => Get.toNamed('/edit-stock', arguments: id),
+          ),
+        ),
+      ),
     );
   }
+}
+
+class _ExpiringItemsDataSource extends DataTableSource {
+  final List<dynamic> _products;
+  final ExpiringItemsController _controller;
+  final Function(String) onEdit;
+
+  _ExpiringItemsDataSource(this._products, this._controller, {required this.onEdit});
+
+  @override
+  DataRow getRow(int index) {
+    final product = _products[index];
+    final daysToExpiry = _controller.getDaysToExpiry(product.expiryDate);
+    final status = _controller.getExpiryStatus(product);
+    final statusColor = _controller.getExpiryStatusColor(product);
+    final statusIcon = _controller.getExpiryStatusIcon(product);
+
+    return DataRow(
+      cells: [
+        DataCell(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(statusIcon, color: statusColor, size: 20),
+              const SizedBox(width: 4),
+              Text(status, style: TextStyle(color: statusColor)),
+            ],
+          ),
+        ),
+        DataCell(Text(product.name)),
+        DataCell(Text(product.category)),
+        DataCell(Text(_controller.formatDate(product.expiryDate))),
+        DataCell(Text(
+          daysToExpiry < 0
+              ? '${-daysToExpiry} days ago'
+              : daysToExpiry == 0
+                  ? 'Today'
+                  : '$daysToExpiry days',
+          style: TextStyle(color: statusColor),
+        )),
+        DataCell(Text(_controller.formatCurrency(product.price))),
+        DataCell(
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () => onEdit(product.id),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => _products.length;
+
+  @override
+  int get selectedRowCount => 0;
 }
