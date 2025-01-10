@@ -261,6 +261,8 @@ class _ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<SalesController>();
+    
     return Card(
       elevation: 2,
       child: Padding(
@@ -278,12 +280,16 @@ class _ProductCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
-            Text(
-              'Quantity: ${product.quantity}',
-              style: TextStyle(
-                color: product.quantity < 10 ? Colors.red : Colors.grey[600],
-              ),
-            ),
+            Obx(() {
+              final availableQty = controller.getAvailableQuantity(product.id);
+              return Text(
+                'Available: $availableQty',
+                style: TextStyle(
+                  color: availableQty < 10 ? Colors.red : Colors.grey[600],
+                  fontWeight: availableQty < 10 ? FontWeight.bold : FontWeight.normal,
+                ),
+              );
+            }),
             Text(
               '\$${product.price.toStringAsFixed(2)}',
               style: const TextStyle(
@@ -296,11 +302,16 @@ class _ProductCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: TextButton.icon(
-                    icon: const Icon(Icons.add_shopping_cart),
-                    label: const Text('Add'),
-                    onPressed: () => _showQuantityDialog(context),
-                  ),
+                  child: Obx(() {
+                    final availableQty = controller.getAvailableQuantity(product.id);
+                    return TextButton.icon(
+                      icon: const Icon(Icons.add_shopping_cart),
+                      label: const Text('Add'),
+                      onPressed: availableQty > 0 
+                        ? () => _showQuantityDialog(context, availableQty)
+                        : null,
+                    );
+                  }),
                 ),
               ],
             ),
@@ -310,7 +321,7 @@ class _ProductCard extends StatelessWidget {
     );
   }
 
-  void _showQuantityDialog(BuildContext context) {
+  void _showQuantityDialog(BuildContext context, int maxQuantity) {
     int quantity = 1;
     showDialog(
       context: context,
@@ -319,6 +330,8 @@ class _ProductCard extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text('Available quantity: $maxQuantity'),
+            const SizedBox(height: 16),
             const Text('Select quantity:'),
             const SizedBox(height: 16),
             Row(
@@ -340,7 +353,7 @@ class _ProductCard extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.add),
                   onPressed: () {
-                    if (quantity < product.quantity) {
+                    if (quantity < maxQuantity) {
                       quantity++;
                       (context as Element).markNeedsBuild();
                     }

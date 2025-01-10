@@ -2,17 +2,23 @@ import 'package:get/get.dart';
 import '../models/dashboard_model.dart';
 import '../../../data/services/inventory_service.dart';
 import '../../../data/services/alert_service.dart';
+import '../../../data/repositories/sales_repository.dart';
 import '../../../features/alerts_and_notifications/models/notification_model.dart';
 
 class DashboardController extends GetxController {
   final InventoryService _inventoryService;
   final AlertService _alertService;
+  final SalesRepository _salesRepository;
   final Rx<DashboardSummary> summary = DashboardSummary().obs;
   final RxList<DashboardChartData> salesData = <DashboardChartData>[].obs;
   final RxList<DashboardAlert> recentAlerts = <DashboardAlert>[].obs;
   final RxBool isLoading = false.obs;
 
-  DashboardController(this._inventoryService, this._alertService);
+  DashboardController(
+    this._inventoryService,
+    this._alertService,
+    this._salesRepository,
+  );
 
   @override
   void onInit() {
@@ -32,12 +38,15 @@ class DashboardController extends GetxController {
       final alerts = _alertService.notifications;
       final unreadAlerts = alerts.where((n) => !n.isRead).toList();
 
+      // Get total sales from sales repository
+      final totalSales = await _salesRepository.getTotalSales();
+
       // Update summary
       summary.value = DashboardSummary(
         totalProducts: products.length,
         lowStockItems: lowStockProducts.length,
         expiringItems: expiringProducts.length,
-        totalSales: products.fold(0.0, (sum, product) => sum + (product.price * product.quantity)),
+        totalSales: totalSales,
         pendingAlerts: unreadAlerts.length,
       );
 
@@ -91,7 +100,7 @@ class DashboardController extends GetxController {
       case NotificationType.newOrder:
       case NotificationType.paymentDue:
       case NotificationType.custom:
-        return AlertType.highDemand; // Default to high demand for other types
+        return AlertType.highDemand;
     }
   }
 
