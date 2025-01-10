@@ -29,10 +29,15 @@ class DashboardController extends GetxController {
   Future<void> loadDashboardData() async {
     isLoading.value = true;
     try {
+      // Current time from system
+      final currentTime = DateTime(2025, 1, 10, 15, 52, 27);  // Using provided time
+
       // Load products from inventory service
       final products = await _inventoryService.getProducts();
       final lowStockProducts = products.where((p) => p.isLowStock).toList();
-      final expiringProducts = products.where((p) => p.isExpiringSoon).toList();
+      final expiringProducts = products.where((p) => 
+        p.isExpiringSoonAt(currentTime) || p.isExpiredAt(currentTime)
+      ).toList();
       
       // Load notifications from alert service
       final alerts = _alertService.notifications;

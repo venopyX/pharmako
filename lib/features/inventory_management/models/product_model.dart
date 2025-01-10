@@ -33,9 +33,18 @@ class Product {
 
   bool get isLowStock => quantity <= minimumStockLevel;
   
+  // Expiry thresholds in days
+  static const int criticalThresholdDays = 30;
+  static const int warningThresholdDays = 90;
+
   bool isExpiringSoonAt(DateTime currentTime) {
     final days = expiryDate.difference(currentTime).inDays;
-    return days >= 0 && days <= 30;  // Not expired but will expire within 30 days
+    return days >= 0 && days <= warningThresholdDays;  // Not expired but will expire within 90 days
+  }
+
+  bool isCriticalExpiryAt(DateTime currentTime) {
+    final days = expiryDate.difference(currentTime).inDays;
+    return days >= 0 && days <= criticalThresholdDays;  // Not expired but will expire within 30 days
   }
 
   bool isExpiredAt(DateTime currentTime) {
