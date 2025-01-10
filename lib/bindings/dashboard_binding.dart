@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../data/repositories/alert_repository.dart';
 import '../data/repositories/inventory_repository.dart';
+import '../data/repositories/sales_repository.dart';
 import '../data/services/alert_service.dart';
 import '../data/services/inventory_service.dart';
 import '../features/home_dashboard/controllers/dashboard_controller.dart';
@@ -15,6 +16,9 @@ class DashboardBinding extends Bindings {
     if (!Get.isRegistered<InventoryRepository>()) {
       Get.put(InventoryRepository());
     }
+    if (!Get.isRegistered<SalesRepository>()) {
+      Get.put(SalesRepository());
+    }
 
     // Initialize services if not already initialized
     if (!Get.isRegistered<AlertService>()) {
@@ -28,6 +32,7 @@ class DashboardBinding extends Bindings {
     Get.put(DashboardController(
       Get.find<InventoryService>(),
       Get.find<AlertService>(),
+      Get.find<SalesRepository>(),
     ));
   }
 }
