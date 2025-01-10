@@ -163,6 +163,11 @@ class InventoryReportSummary {
     required this.categorySummary,
   });
 
+  // Getters for derived properties
+  double get totalValue => totalInventoryValue;
+  int get totalStockMovement => totalStockReceived + totalStockSold + totalStockAdjusted;
+  List<CategorySummary> get categories => categorySummary.values.toList();
+
   factory InventoryReportSummary.fromJson(Map<String, dynamic> json) {
     return InventoryReportSummary(
       totalProducts: json['totalProducts'] as int,

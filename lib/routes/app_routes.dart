@@ -4,6 +4,8 @@ import '../bindings/inventory_binding.dart';
 import '../bindings/notification_binding.dart';
 import '../bindings/expiring_items_binding.dart';
 import '../bindings/sales_binding.dart';
+import '../bindings/analytics_binding.dart';
+import '../bindings/main_menu_binding.dart';
 import '../features/home_dashboard/views/dashboard_view.dart';
 import '../features/inventory_management/views/add_stock_view.dart';
 import '../features/inventory_management/views/edit_stock_view.dart';
@@ -12,17 +14,38 @@ import '../features/inventory_management/views/low_stock_view.dart';
 import '../features/inventory_management/views/expiring_items_view.dart';
 import '../features/alerts_and_notifications/views/notification_view.dart';
 import '../features/sales_management/views/sales_view.dart';
+import '../features/reports_and_analytics/views/dashboard_analytics_view.dart';
+import '../features/reports_and_analytics/views/inventory_analytics_view.dart';
+import '../features/reports_and_analytics/views/sales_analytics_view.dart';
+import '../features/reports_and_analytics/views/inventory_report_view.dart';
+import '../features/reports_and_analytics/views/customer_analytics_view.dart';
+import '../features/reports_and_analytics/views/order_analytics_view.dart';
+import '../features/main_menu/views/main_menu_view.dart';
 
 class AppRoutes {
   static const String home = '/';
+  static const String menu = '/menu';
   static const String sales = '/sales';
   static const String sale = '/sale';  // Alias for sales for better semantics
+  
+  // Analytics Routes
+  static const String analytics = '/analytics';
+  static const String inventoryAnalytics = '/analytics/inventory';
+  static const String salesAnalytics = '/analytics/sales';
+  static const String inventoryReport = '/analytics/inventory-report';
+  static const String customerAnalytics = '/analytics/customers';
+  static const String orderAnalytics = '/analytics/orders';
 
   static final routes = [
     GetPage(
       name: home,
       page: () => const DashboardView(),
       binding: DashboardBinding(),
+    ),
+    GetPage(
+      name: menu,
+      page: () => const MainMenuView(),
+      binding: MainMenuBinding(),
     ),
     GetPage(
       name: '/inventory',
@@ -63,6 +86,40 @@ class AppRoutes {
       name: sale,
       page: () => const SalesView(),  // Same view, different route
       binding: SalesBinding(),
+    ),
+    
+    // Analytics Routes
+    GetPage(
+      name: analytics,
+      page: () => const DashboardAnalyticsView(),
+      binding: AnalyticsBinding(),
+      children: [
+        GetPage(
+          name: inventoryAnalytics,
+          page: () => const InventoryAnalyticsView(),
+          binding: AnalyticsBinding(),
+        ),
+        GetPage(
+          name: salesAnalytics,
+          page: () => const SalesAnalyticsView(),
+          binding: AnalyticsBinding(),
+        ),
+        GetPage(
+          name: inventoryReport,
+          page: () => const InventoryReportView(),
+          binding: AnalyticsBinding(),
+        ),
+        GetPage(
+          name: customerAnalytics,
+          page: () => const CustomerAnalyticsView(),
+          binding: AnalyticsBinding(),
+        ),
+        GetPage(
+          name: orderAnalytics,
+          page: () => const OrderAnalyticsView(),
+          binding: AnalyticsBinding(),
+        ),
+      ],
     ),
   ];
 }

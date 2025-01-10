@@ -87,6 +87,22 @@ class InventoryReportController extends GetxController {
     }
   }
 
+  String formatNumber(num value) {
+    return NumberFormat('#,##0').format(value);
+  }
+
+  String formatCurrency(double value) {
+    return NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(value);
+  }
+
+  String formatDate(DateTime date) {
+    return DateFormat('MMMM d, y').format(date);
+  }
+
+  String formatDateShort(DateTime date) {
+    return DateFormat('MMM d, y').format(date);
+  }
+
   List<InventoryReportItem> get filteredItems {
     if (report.value == null) return [];
 
@@ -157,18 +173,6 @@ class InventoryReportController extends GetxController {
         .toList()
       ..sort();
     return ['All', ...categories];
-  }
-
-  String formatDate(DateTime date) {
-    return DateFormat('MMM dd, yyyy').format(date);
-  }
-
-  String formatCurrency(double value) {
-    return '\$${value.toStringAsFixed(2)}';
-  }
-
-  String formatNumber(num value) {
-    return NumberFormat('#,##0').format(value);
   }
 
   String formatPercentage(double value) {
