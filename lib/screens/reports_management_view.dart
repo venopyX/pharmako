@@ -171,23 +171,23 @@ class ReportsManagementView extends GetView<ReportsManagementController> {
                     verticalInterval: 1,
                     getDrawingHorizontalLine: (value) {
                       return FlLine(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withAlpha(25),
                         strokeWidth: 1,
                       );
                     },
                     getDrawingVerticalLine: (value) {
                       return FlLine(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withAlpha(25),
                         strokeWidth: 1,
                       );
                     },
                   ),
                   titlesData: FlTitlesData(
                     show: true,
-                    rightTitles: AxisTitles(
+                    rightTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
-                    topTitles: AxisTitles(
+                    topTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
                     bottomTitles: AxisTitles(
@@ -226,7 +226,7 @@ class ReportsManagementView extends GetView<ReportsManagementController> {
                   ),
                   borderData: FlBorderData(
                     show: true,
-                    border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                    border: Border.all(color: Colors.grey.withAlpha(25)),
                   ),
                   minX: 0,
                   maxX: (dailyData.length - 1).toDouble(),
@@ -248,10 +248,10 @@ class ReportsManagementView extends GetView<ReportsManagementController> {
                       color: Theme.of(Get.context!).primaryColor,
                       barWidth: 3,
                       isStrokeCapRound: true,
-                      dotData: FlDotData(show: false),
+                      dotData: const FlDotData(show: false),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: Theme.of(Get.context!).primaryColor.withOpacity(0.1),
+                        color: Theme.of(Get.context!).primaryColor.withAlpha(25),
                       ),
                     ),
                   ],
