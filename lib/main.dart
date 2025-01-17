@@ -6,6 +6,8 @@ import 'services/notification_service.dart';
 import 'services/settings_service.dart';
 import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
+import 'widgets/app_drawer.dart';
+import 'bindings/app_drawer_binding.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +17,9 @@ void main() async {
   Get.put(NotificationService());
   Get.put(SettingsService());
   Get.put(AuthService());
+
+  // Initialize bindings
+  AppDrawerBinding().dependencies();
 
   runApp(const PharmacyApp());
 }
@@ -34,6 +39,12 @@ class PharmacyApp extends StatelessWidget {
       defaultTransition: Transition.fade,
       initialRoute: AppRoutes.initial,
       getPages: AppRoutes.routes,
+      builder: (context, child) {
+        return Scaffold(
+          body: child,
+          drawer: const AppDrawer(),
+        );
+      },
     );
   }
 }

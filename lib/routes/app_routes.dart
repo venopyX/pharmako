@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:pharmako/bindings/dashboard_binding.dart';
 import 'package:pharmako/bindings/inventory_binding.dart';
-import 'package:pharmako/bindings/main_menu_binding.dart';
 import 'package:pharmako/bindings/notification_binding.dart';
 import 'package:pharmako/bindings/profile_binding.dart';
 import 'package:pharmako/bindings/sales_binding.dart';
@@ -11,7 +10,6 @@ import 'package:pharmako/bindings/reports_binding.dart';
 import 'package:pharmako/screens/activity_log_view.dart';
 import 'package:pharmako/screens/dashboard_view.dart';
 import 'package:pharmako/screens/inventory_management_view.dart';
-import 'package:pharmako/screens/main_menu_view.dart';
 import 'package:pharmako/screens/notification_management_view.dart';
 import 'package:pharmako/screens/reports_management_view.dart';
 import 'package:pharmako/screens/sales_management_view.dart';
@@ -27,7 +25,6 @@ class AppRoutes {
 
   // Route names as constants for type safety and easy refactoring
   static const String dashboard = '/dashboard';
-  static const String mainMenu = '/main-menu';
   static const String inventory = '/inventory';
   static const String profile = '/profile';
   static const String notifications = '/notifications';
@@ -42,12 +39,6 @@ class AppRoutes {
       name: dashboard,
       page: () => const DashboardView(),
       binding: DashboardBinding(),
-      transition: Transition.fadeIn,
-    ),
-    GetPage(
-      name: mainMenu,
-      page: () => const MainMenuView(),
-      binding: MainMenuBinding(),
       transition: Transition.fadeIn,
     ),
     GetPage(
