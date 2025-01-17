@@ -1,15 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'routes/app_routes.dart';
-import 'utils/theme/app_theme.dart';
+import 'services/activity_log_service.dart';
+import 'services/notification_service.dart';
+import 'services/settings_service.dart';
+import 'services/auth_service.dart';
+import 'theme/app_theme.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+
+  // Initialize services
+  Get.put(ActivityLogService());
+  Get.put(NotificationService());
+  Get.put(SettingsService());
+  Get.put(AuthService());
+
+  runApp(const PharmacyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+/// The main app widget
+class PharmacyApp extends StatelessWidget {
+  const PharmacyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +31,9 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
-      defaultTransition: Transition.fadeIn,
+      defaultTransition: Transition.fade,
+      initialRoute: AppRoutes.initial,
       getPages: AppRoutes.routes,
-      initialRoute: '/',
     );
   }
 }

@@ -1,68 +1,98 @@
 import 'package:get/get.dart';
-import '../bindings/dashboard_binding.dart';
-import '../bindings/inventory_binding.dart';
-import '../bindings/notification_binding.dart';
-import '../bindings/expiring_items_binding.dart';
-import '../bindings/sales_binding.dart';
-import '../features/home_dashboard/views/dashboard_view.dart';
-import '../features/inventory_management/views/add_stock_view.dart';
-import '../features/inventory_management/views/edit_stock_view.dart';
-import '../features/inventory_management/views/view_stock_view.dart';
-import '../features/inventory_management/views/low_stock_view.dart';
-import '../features/inventory_management/views/expiring_items_view.dart';
-import '../features/alerts_and_notifications/views/notification_view.dart';
-import '../features/sales_management/views/sales_view.dart';
+import 'package:pharmako/bindings/dashboard_binding.dart';
+import 'package:pharmako/bindings/inventory_binding.dart';
+import 'package:pharmako/bindings/main_menu_binding.dart';
+import 'package:pharmako/bindings/notification_binding.dart';
+import 'package:pharmako/bindings/profile_binding.dart';
+import 'package:pharmako/bindings/sales_binding.dart';
+import 'package:pharmako/bindings/search_binding.dart';
+import 'package:pharmako/bindings/settings_binding.dart';
+import 'package:pharmako/screens/activity_log_view.dart';
+import 'package:pharmako/screens/dashboard_view.dart';
+import 'package:pharmako/screens/inventory_management_view.dart';
+import 'package:pharmako/screens/main_menu_view.dart';
+import 'package:pharmako/screens/notification_management_view.dart';
+import 'package:pharmako/screens/reports_management_view.dart';
+import 'package:pharmako/screens/sales_management_view.dart';
+import 'package:pharmako/screens/settings_view.dart';
+import 'package:pharmako/screens/user_profile_management_view.dart';
 
+/// AppRoutes class handles all the routing configuration for the Pharmako application.
+/// It defines route names as constants and provides a list of all available routes
+/// with their corresponding screens and bindings.
 class AppRoutes {
-  static const String home = '/';
-  static const String sales = '/sales';
-  static const String sale = '/sale';  // Alias for sales for better semantics
+  /// Private constructor to prevent instantiation
+  AppRoutes._();
 
-  static final routes = [
+  // Route names as constants for type safety and easy refactoring
+  static const String dashboard = '/dashboard';
+  static const String mainMenu = '/main-menu';
+  static const String inventory = '/inventory';
+  static const String profile = '/profile';
+  static const String notifications = '/notifications';
+  static const String settings = '/settings';
+  static const String reports = '/reports';
+  static const String sales = '/sales';
+  static const String activityLog = '/activity-log';
+
+  /// List of all available routes in the application
+  static final List<GetPage> routes = [
     GetPage(
-      name: home,
+      name: dashboard,
       page: () => const DashboardView(),
       binding: DashboardBinding(),
+      transition: Transition.fadeIn,
     ),
     GetPage(
-      name: '/inventory',
-      page: () => const ViewStockView(),
+      name: mainMenu,
+      page: () => const MainMenuView(),
+      binding: MainMenuBinding(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: inventory,
+      page: () => const InventoryManagementView(),
       binding: InventoryBinding(),
+      transition: Transition.fadeIn,
     ),
     GetPage(
-      name: '/add-stock',
-      page: () => const AddStockView(),
-      binding: InventoryBinding(),
+      name: profile,
+      page: () => const UserProfileManagementView(),
+      binding: ProfileBinding(),
+      transition: Transition.fadeIn,
     ),
     GetPage(
-      name: '/edit-stock',
-      page: () => const EditStockView(),
-      binding: InventoryBinding(),
-    ),
-    GetPage(
-      name: '/low-stock',
-      page: () => const LowStockView(),
-      binding: InventoryBinding(),
-    ),
-    GetPage(
-      name: '/expiring',
-      page: () => const ExpiringItemsView(),
-      binding: ExpiringItemsBinding(),
-    ),
-    GetPage(
-      name: '/notifications',
-      page: () => const NotificationView(),
+      name: notifications,
+      page: () => const NotificationManagementView(),
       binding: NotificationBinding(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: settings,
+      page: () => const SettingsView(),
+      binding: SettingsBinding(),
+      transition: Transition.fadeIn,
+    ),
+    GetPage(
+      name: reports,
+      page: () => const ReportsManagementView(),
+      // TODO: Add ReportsBinding when implemented
+      transition: Transition.fadeIn,
     ),
     GetPage(
       name: sales,
-      page: () => const SalesView(),
+      page: () => const SalesManagementView(),
       binding: SalesBinding(),
+      transition: Transition.fadeIn,
     ),
     GetPage(
-      name: sale,
-      page: () => const SalesView(),  // Same view, different route
-      binding: SalesBinding(),
+      name: activityLog,
+      page: () => const ActivityLogView(),
+      // TODO: Add ActivityLogBinding when implemented
+      transition: Transition.fadeIn,
     ),
   ];
+
+  /// Initial route of the application
+  static String get initial => dashboard;
 }
