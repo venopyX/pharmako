@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:pharmako/controllers/activity_log_controller.dart';
+import '../controllers/activity_log_controller.dart';
 
 /// Binding for the Activity Log feature
 /// Initializes and injects the ActivityLogController
