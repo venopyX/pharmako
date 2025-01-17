@@ -5,7 +5,6 @@ import 'package:pharmako/bindings/main_menu_binding.dart';
 import 'package:pharmako/bindings/notification_binding.dart';
 import 'package:pharmako/bindings/profile_binding.dart';
 import 'package:pharmako/bindings/sales_binding.dart';
-import 'package:pharmako/bindings/search_binding.dart';
 import 'package:pharmako/bindings/settings_binding.dart';
 import 'package:pharmako/screens/activity_log_view.dart';
 import 'package:pharmako/screens/dashboard_view.dart';

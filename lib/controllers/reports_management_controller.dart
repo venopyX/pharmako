@@ -101,8 +101,8 @@ class ReportsManagementController extends GetxController {
   LineChartData getProfitMarginChart() {
     // TODO: Implement actual chart data
     return LineChartData(
-      gridData: FlGridData(show: true),
-      titlesData: FlTitlesData(show: true),
+      gridData: const FlGridData(show: true),
+      titlesData: const FlTitlesData(show: true),
       borderData: FlBorderData(show: true),
       lineBarsData: [
         LineChartBarData(
@@ -115,7 +115,7 @@ class ReportsManagementController extends GetxController {
           isCurved: true,
           color: Colors.blue,
           barWidth: 2,
-          dotData: FlDotData(show: false),
+          dotData: const FlDotData(show: false),
         ),
       ],
     );
@@ -124,8 +124,8 @@ class ReportsManagementController extends GetxController {
   LineChartData getCustomerTrendsChart() {
     // TODO: Implement actual chart data
     return LineChartData(
-      gridData: FlGridData(show: true),
-      titlesData: FlTitlesData(show: true),
+      gridData: const FlGridData(show: true),
+      titlesData: const FlTitlesData(show: true),
       borderData: FlBorderData(show: true),
       lineBarsData: [
         LineChartBarData(
@@ -138,7 +138,7 @@ class ReportsManagementController extends GetxController {
           isCurved: true,
           color: Colors.green,
           barWidth: 2,
-          dotData: FlDotData(show: false),
+          dotData: const FlDotData(show: false),
         ),
       ],
     );
@@ -147,8 +147,8 @@ class ReportsManagementController extends GetxController {
   BarChartData getPeakHoursChart() {
     // TODO: Implement actual chart data
     return BarChartData(
-      gridData: FlGridData(show: true),
-      titlesData: FlTitlesData(show: true),
+      gridData: const FlGridData(show: true),
+      titlesData: const FlTitlesData(show: true),
       borderData: FlBorderData(show: true),
       barGroups: [
         BarChartGroupData(x: 0, barRods: [BarChartRodData(toY: 8)]),
