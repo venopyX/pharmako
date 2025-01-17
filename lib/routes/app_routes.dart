@@ -6,6 +6,8 @@ import 'package:pharmako/bindings/notification_binding.dart';
 import 'package:pharmako/bindings/profile_binding.dart';
 import 'package:pharmako/bindings/sales_binding.dart';
 import 'package:pharmako/bindings/settings_binding.dart';
+import 'package:pharmako/bindings/activity_log_binding.dart';
+import 'package:pharmako/bindings/reports_binding.dart';
 import 'package:pharmako/screens/activity_log_view.dart';
 import 'package:pharmako/screens/dashboard_view.dart';
 import 'package:pharmako/screens/inventory_management_view.dart';
@@ -75,7 +77,7 @@ class AppRoutes {
     GetPage(
       name: reports,
       page: () => const ReportsManagementView(),
-      // TODO: Add ReportsBinding when implemented
+      binding: ReportsBinding(),
       transition: Transition.fadeIn,
     ),
     GetPage(
@@ -87,7 +89,7 @@ class AppRoutes {
     GetPage(
       name: activityLog,
       page: () => const ActivityLogView(),
-      // TODO: Add ActivityLogBinding when implemented
+      binding: ActivityLogBinding(),
       transition: Transition.fadeIn,
     ),
   ];
